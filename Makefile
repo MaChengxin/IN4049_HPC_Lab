@@ -1,6 +1,7 @@
 DAS4=in404950@fs3.das4.tudelft.nl
+PASSWD=17ecBPwj
 
 conn:
-	ssh $(DAS4)
+	sshpass -p $(PASSWD) ssh $(DAS4)
 
 .PHONY: conn
