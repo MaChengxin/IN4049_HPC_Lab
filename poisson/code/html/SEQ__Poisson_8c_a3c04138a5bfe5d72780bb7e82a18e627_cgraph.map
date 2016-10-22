@@ -1,0 +1,12 @@
+<map id="main" name="main">
+<area shape="rect" id="node2" href="$SEQ__Poisson_8c.html#aaedac22c55880495505bf375e0e132c1" title="start_timer" alt="" coords="109,5,203,32"/>
+<area shape="rect" id="node3" href="$SEQ__Poisson_8c.html#af505aa69c0b400f8524fba33d1be6c56" title="Setup_Grid" alt="" coords="109,56,203,83"/>
+<area shape="rect" id="node5" href="$SEQ__Poisson_8c.html#a941bab4d0655ea3e774cd525e664be52" title="Solve" alt="" coords="127,208,185,235"/>
+<area shape="rect" id="node7" href="$SEQ__Poisson_8c.html#a9751107a9e305a3bba4cc251e33d4c8a" title="Write_Grid" alt="" coords="113,107,199,133"/>
+<area shape="rect" id="node8" href="$SEQ__Poisson_8c.html#a7a88ab4723d5367005b91e92f1d354e1" title="print_timer" alt="" coords="110,259,202,285"/>
+<area shape="rect" id="node11" href="$SEQ__Poisson_8c.html#ac17e6b816092e46e29c38d76901b7676" title="Clean_Up" alt="" coords="115,157,197,184"/>
+<area shape="rect" id="node4" href="$SEQ__Poisson_8c.html#a8799488fbd4c3040c7f6a6d95b0ba873" title="Debug" alt="" coords="275,132,339,159"/>
+<area shape="rect" id="node6" href="$SEQ__Poisson_8c.html#a60d5a8db2dad4baf3a1fd5cbbf65a68d" title="Do_Step" alt="" coords="268,208,345,235"/>
+<area shape="rect" id="node9" href="$SEQ__Poisson_8c.html#a58997b988646976eadf522f6b26c9f46" title="stop_timer" alt="" coords="261,259,352,285"/>
+<area shape="rect" id="node10" href="$SEQ__Poisson_8c.html#ad422bdee2a97796fa58649ab546a789c" title="resume_timer" alt="" coords="251,309,363,336"/>
+</map>
