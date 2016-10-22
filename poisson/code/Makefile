@@ -8,4 +8,10 @@ compile:
 run:
 	./$(EXEC)
 
-.PHONY: compile run
+Doxyfile:
+	doxygen -g
+
+callgraph:
+	doxygen Doxyfile
+	
+.PHONY: compile run Doxyfile callgraph
