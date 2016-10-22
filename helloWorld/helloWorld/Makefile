@@ -3,7 +3,7 @@ SRC=helloWorld.c
 EXEC=helloWorld
 
 NODESNUM=4
-CORESNUM=4
+CORESNUM=2
 
 compile:
 	$(CC) -o $(EXEC) $(SRC)
