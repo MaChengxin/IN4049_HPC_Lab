@@ -5,7 +5,7 @@ EXEC=SEQ_Poisson
 compile:
 	$(CC) -o $(EXEC) $(SRC)
 
-run:
+run: compile
 	./$(EXEC)
 
 Doxyfile:
@@ -13,5 +13,7 @@ Doxyfile:
 
 callgraph:
 	doxygen Doxyfile
-	
-.PHONY: compile run Doxyfile callgraph
+
+clean:
+	rm -f output.dat $(EXEC)	
+.PHONY: compile run Doxyfile callgraph clean
