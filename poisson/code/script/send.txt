@@ -1,0 +1,6 @@
+option echo off 
+option batch on 
+option confirm off 
+open sftp://in404950:17ecBPwj@fs3.das4.tudelft.nl
+put -nopermissions -nopreservetime "poisson_par"
+exit
