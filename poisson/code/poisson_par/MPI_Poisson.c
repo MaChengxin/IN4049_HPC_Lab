@@ -1,8 +1,9 @@
 /*
- * SEQ_Poisson.c
+ * MPI_Poisson.c
  * 2D Poison equation solver
  */
 
+#include "mpi.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -20,7 +21,10 @@ enum
 /* global variables */
 int gridsize[2];
 double precision_goal;		/* precision_goal of solution */
-int max_iter;			/* maximum number of iterations alowed */
+int max_iter;			    /* maximum number of iterations alowed */
+
+/* MPI global variables */
+int np, proc_rank;          /*number of MPI processes & rank of a process*/
 
 /* benchmark related variables */
 clock_t ticks;			/* number of systemticks */
@@ -195,7 +199,8 @@ void Solve()
 		count++;
 	}
 
-	printf("Number of iterations : %i\n", count);
+	// printf("Number of iterations : %i\n", count);
+	printf("Rank of process: %i\t Number of iterations: %i\n", proc_rank, count);
 }
 
 void Write_Grid()
@@ -230,6 +235,8 @@ int main(int argc, char **argv)
 	start_timer();
 
 	MPI_Init(&argc, &argv);
+	MPI_Comm_size(MPI_COMM_WORLD, &np);
+	MPI_Comm_rank(MPI_COMM_WORLD, &proc_rank);
 
 	Setup_Grid();
 
