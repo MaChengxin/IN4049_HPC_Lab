@@ -12,6 +12,6 @@ run: compile
 	prun -v -np $(NODESNUM) -$(CORESNUM) -sge-script $$PRUN_ETC/prun-openmpi ./$(EXEC)
 
 clean:
-	rm -f output.dat $(EXEC)
+	rm -f output*.dat $(EXEC)
 	
 .PHONY: compile run clean
