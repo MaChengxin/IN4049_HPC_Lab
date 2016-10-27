@@ -24,7 +24,7 @@ double precision_goal;		/* precision_goal of solution */
 int max_iter;			    /* maximum number of iterations alowed */
 
 /* MPI-related global variables */
-int np, proc_rank;          /*number of MPI processes & rank of a process*/
+int proc_rank;          /*rank of a process*/
 
 /* benchmark related variables */
 clock_t ticks;			/* number of systemticks */
@@ -259,7 +259,6 @@ int main(int argc, char **argv)
 
 	start_timer();
 
-	MPI_Comm_size(MPI_COMM_WORLD, &np);
 	MPI_Comm_rank(MPI_COMM_WORLD, &proc_rank);
 
 	Setup_Grid();
