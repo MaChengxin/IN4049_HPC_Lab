@@ -108,13 +108,19 @@ void Setup_Grid()
 
 	Debug("Setup_Subgrid", 0);
 
-	f = fopen("input.dat", "r");
-	if (f == NULL)
-		Debug("Error opening input.dat", 1);
-	fscanf(f, "nx: %i\n", &gridsize[X_DIR]);
-	fscanf(f, "ny: %i\n", &gridsize[Y_DIR]);
-	fscanf(f, "precision goal: %lf\n", &precision_goal);
-	fscanf(f, "max iterations: %i\n", &max_iter);
+	if (proc_rank == 0) /* only process 0 may execute this if */
+	{
+		f = fopen("input.dat", "r");
+		if (f == NULL)
+			Debug("Error opening input.dat", 1);
+		fscanf(f, "nx: %i\n", &gridsize[X_DIR]);
+		fscanf(f, "ny: %i\n", &gridsize[Y_DIR]);
+		fscanf(f, "precision goal: %lf\n", &precision_goal);
+		fscanf(f, "max iterations: %i\n", &max_iter);
+	}
+	MPI_Bcast(&gridsize, 2, MPI_INT, 0, MPI_COMM_WORLD); /* broadcast the array gridsize in one call */
+	MPI_Bcast(&precision_goal, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD); /* broadcast precision_goal */
+	MPI_Bcast(&max_iter, 1, MPI_INT, 0, MPI_COMM_WORLD); /* broadcast max_iter */
 
 	/* Calculate dimensions of local subgrid */
 	dim[X_DIR] = gridsize[X_DIR] + 2;
@@ -146,11 +152,17 @@ void Setup_Grid()
 	/* put sources in field */
 	do
 	{
-		s = fscanf(f, "source: %lf %lf %lf\n", &source_x, &source_y, &source_val);
+		if (proc_rank == 0) /* only process 0 may scan next line of input */
+			s = fscanf(f, "source: %lf %lf %lf\n", &source_x, &source_y, &source_val);
+
+		MPI_Bcast(&s, 1, MPI_INT, 0, MPI_COMM_WORLD); /* The return value of this scan is broadcast even though it is not input data */
 		if (s == 3)
 		{
-			x = source_x * gridsize[X_DIR];
-			y = source_y * gridsize[Y_DIR];
+			MPI_Bcast(&source_x, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD); /* broadcast source_x */
+			MPI_Bcast(&source_y, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD); /* broadcast source_y */
+			MPI_Bcast(&source_val, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD); /* broadcast source_val */
+			x = gridsize[X_DIR] * source_x;
+			y = gridsize[Y_DIR] * source_y;
 			x += 1;
 			y += 1;
 			phi[x][y] = source_val;
@@ -159,7 +171,8 @@ void Setup_Grid()
 	}
 	while (s == 3);
 
-	fclose(f);
+	if (proc_rank == 0) /* only process 0 may close the file */
+		fclose(f);
 }
 
 double Do_Step(int parity)
