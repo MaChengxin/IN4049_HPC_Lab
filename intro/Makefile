@@ -7,3 +7,4 @@ send:
 	sshpass -p $(PASSWD) scp -r helloWorld $(REMOTE_HOST):/home/$(USERNAME)
 
 .PHONY: send
+
