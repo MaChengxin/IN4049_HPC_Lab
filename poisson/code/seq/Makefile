@@ -16,4 +16,5 @@ callgraph:
 
 clean:
 	rm -f output.dat $(EXEC)	
+
 .PHONY: compile run Doxyfile callgraph clean
