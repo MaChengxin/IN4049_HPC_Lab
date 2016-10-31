@@ -8,7 +8,10 @@ CORESNUM=2
 compile:
 	$(CC) -o $(EXEC) $(SRC)
 
-run:
+run: compile
 	prun -v -np $(NODESNUM) -$(CORESNUM) -sge-script $$PRUN_ETC/prun-openmpi ./$(EXEC)
 
-.PHONY: compile run
+clean:
+	rm -f $(EXEC)
+
+.PHONY: compile run clean
