@@ -61,7 +61,7 @@ void start_timer()
 {
 	if (!timer_on)
 	{
-		/*Each task, when reaching the MPI_Barrier call, blocks until all tasks in the group reach the same MPI_Barrier call. 
+		/*Each task, when reaching the MPI_Barrier call, blocks until all tasks in the group reach the same MPI_Barrier call.
 		Then all tasks are free to proceed.*/
 		MPI_Barrier(grid_comm); /*assures all processes start simultaneously with their timing activities*/
 		ticks = clock();
@@ -231,7 +231,6 @@ void Solve()
 		count++;
 	}
 
-	// printf("Number of iterations : %i\n", count);
 	printf("Rank of process: %i\t Number of iterations: %i\n", proc_rank, count);
 }
 
@@ -294,9 +293,9 @@ void Setup_Proc_Grid(int argc, char **argv)
 
 	/* Retrieve new rank and carthesian coordinates of this process */
 	MPI_Comm_rank(grid_comm, &proc_rank); /* Rank of process in new communicator */
-	MPI_Cart_coords(grid_comm, proc_rank, 2, proc_coord); /* Coordinates of process in new communicator */
+	MPI_Cart_coords(grid_comm, proc_rank, 2, proc_coord); /* Coordinates of a process in the new communicator */
 
-	printf("(%i) (x,y)=(%i,%i)\n", proc_rank, proc_coord[X_DIR], proc_coord[Y_DIR]);
+	printf("The coordinates of process %i is (%i,%i)\n", proc_rank, proc_coord[X_DIR], proc_coord[Y_DIR]);
 
 	/* Calculate ranks of neighbouring processes */
 	MPI_Cart_shift(grid_comm, Y_DIR, 1, &proc_top, &proc_bottom); /* Rank of processes proc_top and proc_bottom */
