@@ -22,7 +22,6 @@ enum
 int gridsize[2];
 double precision_goal;		/* precision_goal of solution */
 int max_iter;			    /* maximum number of iterations alowed */
-int offset[2];
 
 /* MPI-related global variables */
 /* process specific variables */
@@ -34,6 +33,7 @@ int P;                          /* total number of processes */
 int P_grid[2];                  /* process grid dimensions */
 MPI_Comm grid_comm;             /* grid COMMUNICATOR */
 MPI_Status status;
+MPI_Datatype border_type[2];
 
 /* benchmark related variables */
 clock_t ticks;			/* number of systemticks */
@@ -44,6 +44,7 @@ double wtime;               /*wallclock time*/
 double **phi;			/* grid */
 int **source;			/* TRUE if subgrid element is a source */
 int dim[2];			/* grid dimensions */
+int offset[2];
 
 void Setup_Grid();
 double Do_Step(int parity);
@@ -51,6 +52,8 @@ void Solve();
 void Write_Grid();
 void Clean_Up();
 void Setup_Proc_Grid(int argc, char **argv);
+void Setup_MPI_Datatypes();
+void Exchange_Borders();
 
 void Debug(char *mesg, int terminate);
 void start_timer();
@@ -192,7 +195,7 @@ void Setup_Grid()
 			x = x - offset[X_DIR];
 			y = y - offset[Y_DIR];
 			if ( x > 0 && x < dim[X_DIR] - 1 &&
-			     y > 0 && y < dim[Y_DIR] - 1)
+			        y > 0 && y < dim[Y_DIR] - 1)
 			{	/* indices in domain of this process */
 				phi[x][y] = source_val;
 				source[x][y] = 1;
@@ -324,6 +327,40 @@ void Setup_Proc_Grid(int argc, char **argv)
 		       proc_rank, proc_top, proc_right, proc_bottom, proc_left);
 }
 
+void Setup_MPI_Datatypes()
+{
+	Debug("Setup_MPI_Datatypes", 0);
+
+	/* Datatype for vertical data exchange (Y_DIR) */
+	MPI_Type_vector(dim[X_DIR] - 2, 1, dim[Y_DIR], MPI_DOUBLE, &border_type[Y_DIR]);
+	MPI_Type_commit(&border_type[Y_DIR]);
+
+	/* Datatype for horizontal data exchange (X_DIR) */
+	MPI_Type_vector(dim[Y_DIR] - 2, 1, 1, MPI_DOUBLE, &border_type[X_DIR]);
+	MPI_Type_commit(&border_type[X_DIR]);
+}
+
+void Exchange_Borders()
+{
+	Debug("Exchange_Borders", 0);
+
+	MPI_Sendrecv( &phi[1][1], 1, border_type[Y_DIR], proc_top, 0,
+	              &phi[1][offset[Y_DIR]], 1, border_type[Y_DIR], proc_bottom, 0,
+	              grid_comm, &status); /* all traffic in direction "top" */
+
+	MPI_Sendrecv( &phi[1][offset[Y_DIR]], 1, border_type[Y_DIR], proc_bottom, 0,
+	              &phi[1][1], 1, border_type[Y_DIR], proc_top, 0,
+	              grid_comm, &status); /* all traffic in direction "bottom" */
+
+	MPI_Sendrecv( &phi[1][1], 1, border_type[X_DIR], proc_left, 0,
+	              &phi[offset[X_DIR]][1], 1, border_type[X_DIR], proc_right, 0,
+	              grid_comm, &status); /* all traffic in direction "left" */
+
+	MPI_Sendrecv( &phi[offset[X_DIR]][1], 1, border_type[X_DIR], proc_right, 0,
+	              &phi[1][1], 1, border_type[X_DIR], proc_left, 0,
+	              grid_comm, &status); /* all traffic in direction "right" */
+}
+
 int main(int argc, char **argv)
 {
 	MPI_Init(&argc, &argv);
@@ -334,7 +371,11 @@ int main(int argc, char **argv)
 
 	Setup_Grid();
 
+	Setup_MPI_Datatypes();
+
 	Solve();
+
+	Exchange_Borders();
 
 	Write_Grid();
 
@@ -343,5 +384,6 @@ int main(int argc, char **argv)
 	Clean_Up();
 
 	MPI_Finalize();
+
 	return 0;
 }
