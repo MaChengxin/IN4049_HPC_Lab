@@ -244,9 +244,11 @@ void Solve()
 	{
 		Debug("Do_Step 0", 0);
 		delta1 = Do_Step(0);
+		Exchange_Borders();
 
 		Debug("Do_Step 1", 0);
 		delta2 = Do_Step(1);
+		Exchange_Borders();
 
 		delta = max(delta1, delta2);
 		count++;
@@ -374,8 +376,6 @@ int main(int argc, char **argv)
 	Setup_MPI_Datatypes();
 
 	Solve();
-
-	Exchange_Borders();
 
 	Write_Grid();
 
