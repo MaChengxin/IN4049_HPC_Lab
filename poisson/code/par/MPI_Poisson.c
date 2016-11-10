@@ -347,19 +347,19 @@ void Exchange_Borders()
 	Debug("Exchange_Borders", 0);
 
 	MPI_Sendrecv( &phi[1][1], 1, border_type[Y_DIR], proc_top, 0,
-	              &phi[1][offset[Y_DIR]], 1, border_type[Y_DIR], proc_bottom, 0,
+	              &phi[1][dim[Y_DIR] - 1], 1, border_type[Y_DIR], proc_bottom, 0,
 	              grid_comm, &status); /* all traffic in direction "top" */
 
-	MPI_Sendrecv( &phi[1][offset[Y_DIR]], 1, border_type[Y_DIR], proc_bottom, 0,
-	              &phi[1][1], 1, border_type[Y_DIR], proc_top, 0,
+	MPI_Sendrecv( &phi[1][dim[Y_DIR] - 2], 1, border_type[Y_DIR], proc_bottom, 0,
+	              &phi[1][0], 1, border_type[Y_DIR], proc_top, 0,
 	              grid_comm, &status); /* all traffic in direction "bottom" */
 
 	MPI_Sendrecv( &phi[1][1], 1, border_type[X_DIR], proc_left, 0,
-	              &phi[offset[X_DIR]][1], 1, border_type[X_DIR], proc_right, 0,
+	              &phi[dim[X_DIR] - 1][1], 1, border_type[X_DIR], proc_right, 0,
 	              grid_comm, &status); /* all traffic in direction "left" */
 
-	MPI_Sendrecv( &phi[offset[X_DIR]][1], 1, border_type[X_DIR], proc_right, 0,
-	              &phi[1][1], 1, border_type[X_DIR], proc_left, 0,
+	MPI_Sendrecv( &phi[dim[X_DIR] - 2][1], 1, border_type[X_DIR], proc_right, 0,
+	              &phi[0][1], 1, border_type[X_DIR], proc_left, 0,
 	              grid_comm, &status); /* all traffic in direction "right" */
 }
 
