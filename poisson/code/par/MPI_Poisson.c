@@ -348,11 +348,11 @@ void Exchange_Borders()
 
 	MPI_Sendrecv( &phi[1][1], 1, border_type[Y_DIR], proc_top, 0,
 	              &phi[1][dim[Y_DIR] - 1], 1, border_type[Y_DIR], proc_bottom, 0,
-	              grid_comm, &status); /* all traffic in direction "top" */
+	              grid_comm, &status); /* all traffic in direction "up" */
 
 	MPI_Sendrecv( &phi[1][dim[Y_DIR] - 2], 1, border_type[Y_DIR], proc_bottom, 0,
 	              &phi[1][0], 1, border_type[Y_DIR], proc_top, 0,
-	              grid_comm, &status); /* all traffic in direction "bottom" */
+	              grid_comm, &status); /* all traffic in direction "down" */
 
 	MPI_Sendrecv( &phi[1][1], 1, border_type[X_DIR], proc_left, 0,
 	              &phi[dim[X_DIR] - 1][1], 1, border_type[X_DIR], proc_right, 0,
