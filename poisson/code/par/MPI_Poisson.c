@@ -234,13 +234,14 @@ void Solve()
 	int count = 0;
 	double delta;
 	double delta1, delta2;
+	double global_delta;
 
 	Debug("Solve", 0);
 
 	/* give global_delta a higher value then precision_goal */
-	delta = 2 * precision_goal;
+	global_delta = 2 * precision_goal;
 
-	while (delta > precision_goal && count < max_iter)
+	while (global_delta > precision_goal && count < max_iter)
 	{
 		Debug("Do_Step 0", 0);
 		delta1 = Do_Step(0);
@@ -251,6 +252,7 @@ void Solve()
 		Exchange_Borders();
 
 		delta = max(delta1, delta2);
+		MPI_Allreduce(&delta, &global_delta, 1, MPI_DOUBLE, MPI_MAX, grid_comm);
 		count++;
 	}
 
