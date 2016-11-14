@@ -274,7 +274,7 @@ void Write_Grid()
 
 	for (x = 1; x < dim[X_DIR] - 1; x++)
 		for (y = 1; y < dim[Y_DIR] - 1; y++)
-			fprintf(f, "%i %i %f\n", x, y, phi[x][y]);
+			fprintf(f, "%i %i %f\n", x + offset[X_DIR], y + offset[Y_DIR], phi[x][y]);
 
 	fclose(f);
 }
