@@ -1,4 +1,4 @@
-CC=gcc
+CC=icc
 SRC=SEQ_Poisson.c
 EXEC=SEQ_Poisson
 
@@ -8,13 +8,7 @@ compile:
 run: compile
 	./$(EXEC)
 
-Doxyfile:
-	doxygen -g
-
-callgraph:
-	doxygen Doxyfile
-
 clean:
 	rm -f output.dat $(EXEC)	
 
-.PHONY: compile run Doxyfile callgraph clean
+.PHONY: compile run clean
