@@ -10,6 +10,7 @@
 #include <time.h>
 
 #define DEBUG 0
+#define PROFILING 1
 
 #define max(a,b) ((a)>(b)?a:b)
 #define ceildiv(a,b) (1+((a)-1)/(b))
@@ -100,13 +101,23 @@ void print_timer()
 	if (timer_on)
 	{
 		stop_timer();
-		printf("Rank of process: %i\t Elapsed Wtime: %14.6f s \t (%5.1f%% CPU)\n",
-		       proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
+		if (!PROFILING)
+			printf("Rank of process: %i\t Elapsed Wtime: %14.6f s \t (%5.1f%% CPU)\n",
+			       proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
+		else
+			printf("Rank of process:\t %i\t Elapsed Wtime:\t %.6f s\n",
+			       proc_rank, wtime);
 		resume_timer();
 	}
 	else
-		printf("Rank of process: %i\t Elapsed Wtime: %14.6f s \t (%5.1f%% CPU)\n",
-		       proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
+	{
+		if (!PROFILING)
+			printf("Rank of process: %i\t Elapsed Wtime: %14.6f s \t (%5.1f%% CPU)\n",
+			       proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
+		else
+			printf("Rank of process:\t %i\t Elapsed Wtime:\t %.6f s\n",
+			       proc_rank, wtime);
+	}
 }
 
 void Debug(char *mesg, int terminate)
@@ -243,7 +254,13 @@ void Solve(int argc, char **argv)
 	if (argc > 3)
 	{
 		omega =  atof(argv[3]);
-		printf("The overrelaxation coefficient (omega) passed from command line is %.3f\n", omega);
+		if (proc_rank == 0) /* only process 0 may execute this if-statement such that it is only printed once */
+		{
+			if (!PROFILING)
+				printf("The overrelaxation coefficient (omega) passed from command line is %.3f\n", omega);
+			else
+				printf("The overrelaxation coefficient (omega) passed from command line is\t %.3f\n", omega);
+		}
 	}
 
 	Debug("Solve", 0);
@@ -265,8 +282,10 @@ void Solve(int argc, char **argv)
 		MPI_Allreduce(&delta, &global_delta, 1, MPI_DOUBLE, MPI_MAX, grid_comm);
 		count++;
 	}
-
-	printf("Rank of process: %i\t Number of iterations: %i\n", proc_rank, count);
+	if (!PROFILING)
+		printf("Rank of process: %i\t Number of iterations: %i\n", proc_rank, count);
+	else
+		printf("Rank of process:\t %i\t Number of iterations:\t %i\n", proc_rank, count);
 }
 
 void Write_Grid()
@@ -368,7 +387,8 @@ void Setup_Proc_Grid(int argc, char **argv)
 	MPI_Comm_rank(grid_comm, &proc_rank); /* Rank of process in new communicator */
 	MPI_Cart_coords(grid_comm, proc_rank, 2, proc_coord); /* Coordinates of a process in the new communicator */
 
-	printf("The coordinates of process %i is (%i,%i)\n", proc_rank, proc_coord[X_DIR], proc_coord[Y_DIR]);
+	if (!PROFILING)
+		printf("The coordinates of process %i is (%i,%i)\n", proc_rank, proc_coord[X_DIR], proc_coord[Y_DIR]);
 
 	/* Calculate ranks of neighbouring processes */
 	MPI_Cart_shift(grid_comm, Y_DIR, 1, &proc_top, &proc_bottom); /* Rank of processes proc_top and proc_bottom */
