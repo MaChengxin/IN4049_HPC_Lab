@@ -4,8 +4,8 @@ EXEC=MPI_Poisson
 
 NODES_NUM=1
 CORES_NUM=4
-P_GRID_X=2
-P_GRID_Y=2
+P_GRID_X=4
+P_GRID_Y=1
 
 compile:
 	$(CC) -o $(EXEC) $(SRC)
