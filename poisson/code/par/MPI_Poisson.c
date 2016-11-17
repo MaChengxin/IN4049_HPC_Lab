@@ -48,8 +48,8 @@ int dim[2];			/* grid dimensions */
 int offset[2];
 
 void Setup_Grid();
-double Do_Step(int parity);
-void Solve();
+double Do_Step(int parity, double omega);
+void Solve(int argc, char **argv);
 void Write_Grid();
 void Clean_Up();
 void Setup_Proc_Grid(int argc, char **argv);
@@ -209,12 +209,11 @@ void Setup_Grid()
 		fclose(f);
 }
 
-double Do_Step(int parity)
+double Do_Step(int parity, double omega)
 {
 	int x, y;
 	double old_phi;
 	double max_err = 0.0;
-	double omega = 1.99;
 
 	/* calculate interior of grid */
 	for (x = 1; x < dim[X_DIR] - 1; x++)
@@ -233,12 +232,19 @@ double Do_Step(int parity)
 	return max_err;
 }
 
-void Solve()
+void Solve(int argc, char **argv)
 {
 	int count = 0;
 	double delta;
 	double delta1, delta2;
 	double global_delta;
+	double omega;
+
+	if (argc > 3)
+	{
+		omega =  atof(argv[3]);
+		printf("The overrelaxation coefficient (omega) passed from command line is %.3f\n", omega);
+	}
 
 	Debug("Solve", 0);
 
@@ -248,11 +254,11 @@ void Solve()
 	while (global_delta > precision_goal && count < max_iter)
 	{
 		Debug("Do_Step 0", 0);
-		delta1 = Do_Step(0);
+		delta1 = Do_Step(0, omega);
 		Exchange_Borders();
 
 		Debug("Do_Step 1", 0);
-		delta2 = Do_Step(1);
+		delta2 = Do_Step(1, omega);
 		Exchange_Borders();
 
 		delta = max(delta1, delta2);
@@ -419,7 +425,7 @@ int main(int argc, char **argv)
 
 	Setup_MPI_Datatypes();
 
-	Solve();
+	Solve(argc, argv);
 
 	Write_Grid();
 
