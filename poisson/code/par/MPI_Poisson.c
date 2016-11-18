@@ -101,6 +101,7 @@ void print_timer()
 	FILE *fprof;
 	if ((fprof = fopen("profile.csv", "a")) == NULL)
 		Debug("print_timer : fopen failed", 1);
+
 	if (timer_on)
 	{
 		stop_timer();
@@ -108,7 +109,7 @@ void print_timer()
 			printf("Rank of process: %i\t Elapsed Wtime: %14.6f s \t (%5.1f%% CPU)\n",
 			       proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
 		else
-			fprintf(fprof, "Rank of process:\t %i\t Elapsed Wtime:\t %.6f s\n",
+			fprintf(fprof, "Rank of process:\t %i\t Elapsed Wtime (s):\t %.6f\n",
 			        proc_rank, wtime);
 		resume_timer();
 	}
@@ -118,12 +119,11 @@ void print_timer()
 			printf("Rank of process: %i\t Elapsed Wtime: %14.6f s \t (%5.1f%% CPU)\n",
 			       proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
 		else
-			fprintf(fprof, "Rank of process:\t %i\t Elapsed Wtime:\t %.6f s\n",
+			fprintf(fprof, "Rank of process:\t %i\t Elapsed Wtime (s):\t %.6f\n",
 			        proc_rank, wtime);
 	}
 
-	if (proc_rank == 0) /* only process 0 may close the file */
-		fclose(fprof);
+	fclose(fprof);
 }
 
 void Debug(char *mesg, int terminate)
@@ -269,7 +269,7 @@ void Solve(int argc, char **argv)
 			if (!PROFILING)
 				printf("The overrelaxation coefficient (omega) passed from command line is %.3f\n", omega);
 			else
-				fprintf(fprof, "The overrelaxation coefficient (omega) passed from command line is\t %.3f\n", omega);
+				fprintf(fprof, "\nThe overrelaxation coefficient (omega) passed from command line is\t %.3f\n", omega);
 		}
 	}
 
@@ -298,9 +298,7 @@ void Solve(int argc, char **argv)
 	else
 		fprintf(fprof, "Rank of process:\t %i\t Number of iterations:\t %i\n", proc_rank, count);
 
-	if (proc_rank == 0) /* only process 0 may close the file */
-	fprintf(fprof, "\n");
-		fclose(fprof);
+	fclose(fprof);
 }
 
 void Write_Grid()
