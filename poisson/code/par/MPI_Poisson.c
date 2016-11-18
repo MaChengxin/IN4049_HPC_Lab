@@ -256,9 +256,14 @@ void Solve(int argc, char **argv)
 	double delta1, delta2;
 	double global_delta;
 	double omega;
+
 	FILE *fprof;
+	FILE *f_err;
 
 	if ((fprof = fopen("profile.csv", "a")) == NULL)
+		Debug("Solve : fopen failed", 1);
+
+	if ((f_err = fopen("error.csv", "a")) == NULL)
 		Debug("Solve : fopen failed", 1);
 
 	if (argc > 3)
@@ -291,6 +296,13 @@ void Solve(int argc, char **argv)
 		delta = max(delta1, delta2);
 		MPI_Allreduce(&delta, &global_delta, 1, MPI_DOUBLE, MPI_MAX, grid_comm);
 		count++;
+
+		if (PROFILING && proc_rank == 0)
+		{
+			if (count == 1)
+				fprintf(f_err, "The overrelaxation coefficient (omega) passed from command line is\t %.3f\n", omega);
+			fprintf(f_err, "Number of iterations:\t %i\t Error:\t %.6f\n", count, global_delta);
+		}
 	}
 
 	if (!PROFILING)
@@ -299,6 +311,7 @@ void Solve(int argc, char **argv)
 		fprintf(fprof, "Rank of process:\t %i\t Number of iterations:\t %i\n", proc_rank, count);
 
 	fclose(fprof);
+	fclose(f_err);
 }
 
 void Write_Grid()
