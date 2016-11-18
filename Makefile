@@ -13,6 +13,6 @@ send-poisson-par:
 	sshpass -p $(PASSWD) scp -r poisson/code/par $(REMOTE_HOST):/home/$(USERNAME)/poisson
 
 fetch-poisson-profile:
-	sshpass -p $(PASSWD) scp -r $(REMOTE_HOST):/home/$(USERNAME)/poisson/profile.csv poisson/code/par
+	sshpass -p $(PASSWD) scp -r $(REMOTE_HOST):/home/$(USERNAME)/poisson/profile.csv poisson/profile
 
 .PHONY: conn send-hello-world send-poisson-par
