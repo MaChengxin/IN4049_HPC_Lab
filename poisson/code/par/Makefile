@@ -6,7 +6,7 @@ NODES_NUM=1
 CORES_NUM=4
 P_GRID_X=4
 P_GRID_Y=1
-RELAX_FACTOR=1.90 # default value; can be reset from command line
+RELAX_FACTOR=1.95 # default value; can be reset from command line
 
 compile:
 	$(CC) -o $(EXEC) $(SRC)
@@ -18,7 +18,7 @@ clean:
 	rm -f output*.dat $(EXEC) profile.csv
 
 profile:
-	make run
+	make RELAX_FACTOR=1.90 run
 	make RELAX_FACTOR=1.91 run
 	make RELAX_FACTOR=1.92 run
 	make RELAX_FACTOR=1.93 run
