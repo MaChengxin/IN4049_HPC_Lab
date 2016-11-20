@@ -15,7 +15,7 @@ run: compile
 	prun -v -np $(NODES_NUM) -$(CORES_NUM) -sge-script $$PRUN_ETC/prun-openmpi ./$(EXEC) $(P_GRID_X) $(P_GRID_Y) $(RELAX_FACTOR)
 
 clean:
-	rm -f output*.dat $(EXEC) profile.csv error.csv
+	rm -f output*.dat $(EXEC) profile*.csv error*.csv
 
 profile:
 	make RELAX_FACTOR=1.90 run

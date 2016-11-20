@@ -99,7 +99,9 @@ void stop_timer()
 void print_timer()
 {
 	FILE *fprof;
-	if ((fprof = fopen("profile.csv", "a")) == NULL)
+	char profile_filename[40];
+	sprintf(profile_filename, "profile_%i.csv", gridsize[X_DIR]);
+	if ((fprof = fopen(profile_filename, "a")) == NULL)
 		Debug("print_timer : fopen failed", 1);
 
 	if (timer_on)
@@ -260,10 +262,14 @@ void Solve(int argc, char **argv)
 	FILE *fprof;
 	FILE *f_err;
 
-	if ((fprof = fopen("profile.csv", "a")) == NULL)
+	char profile_filename[40];
+	sprintf(profile_filename, "profile_%i.csv", gridsize[X_DIR]);
+	if ((fprof = fopen(profile_filename, "a")) == NULL)
 		Debug("Solve : fopen failed", 1);
 
-	if ((f_err = fopen("error.csv", "a")) == NULL)
+	char error_filename[40];
+	sprintf(error_filename, "error_%i.csv", gridsize[X_DIR]);
+	if ((f_err = fopen(error_filename, "a")) == NULL)
 		Debug("Solve : fopen failed", 1);
 
 	if (argc > 3)
