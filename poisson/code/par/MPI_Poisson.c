@@ -258,6 +258,7 @@ void Solve(int argc, char **argv)
 	double delta1, delta2;
 	double global_delta;
 	double omega;
+	int border_exchange_factor;
 
 	FILE *fprof;
 	FILE *f_err;
@@ -284,6 +285,18 @@ void Solve(int argc, char **argv)
 		}
 	}
 
+	if (argc > 4)
+	{
+		border_exchange_factor =  atoi(argv[4]);
+		if (proc_rank == 0) /* only process 0 may execute this if-statement such that it is only printed once */
+		{
+			if (!PROFILING)
+				printf("The border exchange factor passed from command line is %i\n", border_exchange_factor);
+			else
+				fprintf(fprof, "The border exchange factor passed from command line is\t %i\n", border_exchange_factor);
+		}
+	}
+
 	Debug("Solve", 0);
 
 	/* give global_delta a higher value then precision_goal */
@@ -293,11 +306,13 @@ void Solve(int argc, char **argv)
 	{
 		Debug("Do_Step 0", 0);
 		delta1 = Do_Step(0, omega);
-		Exchange_Borders();
+		if (count % border_exchange_factor == 0)
+			Exchange_Borders();
 
 		Debug("Do_Step 1", 0);
 		delta2 = Do_Step(1, omega);
-		Exchange_Borders();
+		if (count % border_exchange_factor == 0)
+			Exchange_Borders();
 
 		delta = max(delta1, delta2);
 		MPI_Allreduce(&delta, &global_delta, 1, MPI_DOUBLE, MPI_MAX, grid_comm);
@@ -306,7 +321,11 @@ void Solve(int argc, char **argv)
 		if (PROFILING && proc_rank == 0)
 		{
 			if (count == 1)
+			{
 				fprintf(f_err, "The overrelaxation coefficient (omega) passed from command line is\t %.3f\n", omega);
+				fprintf(f_err, "The border exchange factor passed from command line is\t %i\n", border_exchange_factor);
+			}
+
 			fprintf(f_err, "Number of iterations:\t %i\t Error:\t %.6f\n", count, global_delta);
 		}
 	}

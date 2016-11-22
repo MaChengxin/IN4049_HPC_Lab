@@ -1,5 +1,5 @@
-nx: 100
-ny: 100
+nx: 500
+ny: 500
 precision goal: 0.0001
 max iterations: 5000
 source: 0.35 0.70 4.0
