@@ -1,0 +1,11 @@
+
+The overrelaxation coefficient (omega) passed from command line is	 1.950
+The border exchange factor passed from command line is	 1
+Rank of process:	 0	 Number of iterations:	 3003
+Rank of process:	 1	 Number of iterations:	 3003
+Rank of process:	 2	 Number of iterations:	 3003
+Rank of process:	 3	 Number of iterations:	 3003
+Rank of process:	 1	 Elapsed Wtime (s):	 14.453726
+Rank of process:	 2	 Elapsed Wtime (s):	 14.535330
+Rank of process:	 3	 Elapsed Wtime (s):	 14.619628
+Rank of process:	 0	 Elapsed Wtime (s):	 14.728829

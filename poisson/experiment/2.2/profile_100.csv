@@ -1,0 +1,110 @@
+
+The overrelaxation coefficient (omega) passed from command line is	 1.900
+The border exchange factor passed from command line is	 1
+Rank of process:	 0	 Number of iterations:	 220
+Rank of process:	 1	 Number of iterations:	 220
+Rank of process:	 2	 Number of iterations:	 220
+Rank of process:	 3	 Number of iterations:	 220
+Rank of process:	 1	 Elapsed Wtime (s):	 0.024873
+Rank of process:	 2	 Elapsed Wtime (s):	 0.026067
+Rank of process:	 3	 Elapsed Wtime (s):	 0.027344
+Rank of process:	 0	 Elapsed Wtime (s):	 0.029294
+
+The overrelaxation coefficient (omega) passed from command line is	 1.910
+The border exchange factor passed from command line is	 1
+Rank of process:	 0	 Number of iterations:	 194
+Rank of process:	 3	 Number of iterations:	 194
+Rank of process:	 2	 Number of iterations:	 194
+Rank of process:	 1	 Number of iterations:	 194
+Rank of process:	 1	 Elapsed Wtime (s):	 0.021589
+Rank of process:	 2	 Elapsed Wtime (s):	 0.022879
+Rank of process:	 3	 Elapsed Wtime (s):	 0.024183
+Rank of process:	 0	 Elapsed Wtime (s):	 0.026298
+
+The overrelaxation coefficient (omega) passed from command line is	 1.920
+The border exchange factor passed from command line is	 1
+Rank of process:	 0	 Number of iterations:	 165
+Rank of process:	 1	 Number of iterations:	 165
+Rank of process:	 3	 Number of iterations:	 165
+Rank of process:	 2	 Number of iterations:	 165
+Rank of process:	 1	 Elapsed Wtime (s):	 0.023180
+Rank of process:	 2	 Elapsed Wtime (s):	 0.025692
+Rank of process:	 3	 Elapsed Wtime (s):	 0.028096
+Rank of process:	 0	 Elapsed Wtime (s):	 0.030206
+
+The overrelaxation coefficient (omega) passed from command line is	 1.930
+The border exchange factor passed from command line is	 1
+Rank of process:	 0	 Number of iterations:	 131
+Rank of process:	 1	 Number of iterations:	 131
+Rank of process:	 2	 Number of iterations:	 131
+Rank of process:	 3	 Number of iterations:	 131
+Rank of process:	 1	 Elapsed Wtime (s):	 0.015288
+Rank of process:	 2	 Elapsed Wtime (s):	 0.016492
+Rank of process:	 3	 Elapsed Wtime (s):	 0.017758
+Rank of process:	 0	 Elapsed Wtime (s):	 0.019755
+
+The overrelaxation coefficient (omega) passed from command line is	 1.940
+The border exchange factor passed from command line is	 1
+Rank of process:	 0	 Number of iterations:	 142
+Rank of process:	 2	 Number of iterations:	 142
+Rank of process:	 1	 Number of iterations:	 142
+Rank of process:	 3	 Number of iterations:	 142
+Rank of process:	 1	 Elapsed Wtime (s):	 0.018085
+Rank of process:	 2	 Elapsed Wtime (s):	 0.019320
+Rank of process:	 3	 Elapsed Wtime (s):	 0.020559
+Rank of process:	 0	 Elapsed Wtime (s):	 0.022613
+
+The overrelaxation coefficient (omega) passed from command line is	 1.950
+The border exchange factor passed from command line is	 1
+Rank of process:	 0	 Number of iterations:	 166
+Rank of process:	 3	 Number of iterations:	 166
+Rank of process:	 2	 Number of iterations:	 166
+Rank of process:	 1	 Number of iterations:	 166
+Rank of process:	 1	 Elapsed Wtime (s):	 0.018199
+Rank of process:	 2	 Elapsed Wtime (s):	 0.019542
+Rank of process:	 3	 Elapsed Wtime (s):	 0.020809
+Rank of process:	 0	 Elapsed Wtime (s):	 0.022783
+
+The overrelaxation coefficient (omega) passed from command line is	 1.960
+The border exchange factor passed from command line is	 1
+Rank of process:	 0	 Number of iterations:	 206
+Rank of process:	 1	 Number of iterations:	 206
+Rank of process:	 3	 Number of iterations:	 206
+Rank of process:	 2	 Number of iterations:	 206
+Rank of process:	 1	 Elapsed Wtime (s):	 0.022802
+Rank of process:	 2	 Elapsed Wtime (s):	 0.024072
+Rank of process:	 3	 Elapsed Wtime (s):	 0.025331
+Rank of process:	 0	 Elapsed Wtime (s):	 0.027390
+
+The overrelaxation coefficient (omega) passed from command line is	 1.970
+The border exchange factor passed from command line is	 1
+Rank of process:	 0	 Number of iterations:	 281
+Rank of process:	 2	 Number of iterations:	 281
+Rank of process:	 3	 Number of iterations:	 281
+Rank of process:	 1	 Number of iterations:	 281
+Rank of process:	 1	 Elapsed Wtime (s):	 0.039471
+Rank of process:	 2	 Elapsed Wtime (s):	 0.029826
+Rank of process:	 3	 Elapsed Wtime (s):	 0.042100
+Rank of process:	 0	 Elapsed Wtime (s):	 0.033353
+
+The overrelaxation coefficient (omega) passed from command line is	 1.980
+The border exchange factor passed from command line is	 1
+Rank of process:	 0	 Number of iterations:	 419
+Rank of process:	 2	 Number of iterations:	 419
+Rank of process:	 1	 Number of iterations:	 419
+Rank of process:	 3	 Number of iterations:	 419
+Rank of process:	 1	 Elapsed Wtime (s):	 0.063498
+Rank of process:	 2	 Elapsed Wtime (s):	 0.064822
+Rank of process:	 3	 Elapsed Wtime (s):	 0.066186
+Rank of process:	 0	 Elapsed Wtime (s):	 0.068196
+
+The overrelaxation coefficient (omega) passed from command line is	 1.990
+The border exchange factor passed from command line is	 1
+Rank of process:	 0	 Number of iterations:	 830
+Rank of process:	 1	 Number of iterations:	 830
+Rank of process:	 3	 Number of iterations:	 830
+Rank of process:	 2	 Number of iterations:	 830
+Rank of process:	 1	 Elapsed Wtime (s):	 0.072245
+Rank of process:	 2	 Elapsed Wtime (s):	 0.073593
+Rank of process:	 3	 Elapsed Wtime (s):	 0.074931
+Rank of process:	 0	 Elapsed Wtime (s):	 0.077124
