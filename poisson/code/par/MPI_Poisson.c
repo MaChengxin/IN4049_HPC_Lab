@@ -337,13 +337,13 @@ void Solve(int argc, char **argv)
 				// fprintf(f_err, "The overrelaxation coefficient (omega) passed from command line is\t %.3f\n", omega);
 				// fprintf(f_err, "The border exchange factor passed from command line is\t %i\n", border_exchange_factor);
 				base_time = MPI_Wtime();
-				curr_elapsed_time = 0;
-				fprintf(f_err, "Number of iterations:\t %i\t Error:\t %.6f\t Elapsed Wtime:\t %14.6f\n", count, delta, curr_elapsed_time);
+				curr_elapsed_time = 0.0;
+				fprintf(f_err, "Number of iterations:\t %i\t Error:\t %.6f\t Elapsed time:\t %14.6f\n", count, delta, curr_elapsed_time);
 			}
 			else
 			{
 				curr_elapsed_time = MPI_Wtime() - base_time;
-				fprintf(f_err, "Number of iterations:\t %i\t Error:\t %.6f\t Elapsed Wtime:\t %14.6f\n", count, delta, curr_elapsed_time);
+				fprintf(f_err, "Number of iterations:\t %i\t Error:\t %.6f\t Elapsed time:\t %14.6f\n", count, delta, curr_elapsed_time);
 			}
 		}
 	}
