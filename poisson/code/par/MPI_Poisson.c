@@ -316,7 +316,8 @@ void Solve(int argc, char **argv)
 			Exchange_Borders();
 
 		delta = max(delta1, delta2);
-		MPI_Allreduce(&delta, &global_delta, 1, MPI_DOUBLE, MPI_MAX, grid_comm);
+		if (count % 1 == 0) /* switch of adjusting the frequency of calling MPI_Allreduce */
+			MPI_Allreduce(&delta, &global_delta, 1, MPI_DOUBLE, MPI_MAX, grid_comm);
 		count++;
 
 		if (PROFILING && proc_rank == 0)
