@@ -42,6 +42,11 @@ clock_t ticks;			/* number of systemticks */
 int timer_on = 0;		/* is timer running? */
 double wtime;               /*wallclock time*/
 
+double timer_exchange_borders_total = 0.0;
+double timer_exchange_borders;
+double timer_exchange_borders_start_1, timer_exchange_borders_stop_1;
+double timer_exchange_borders_start_2, timer_exchange_borders_stop_2;
+
 /* local grid related variables */
 double **phi;			/* grid */
 int **source;			/* TRUE if subgrid element is a source */
@@ -316,14 +321,23 @@ void Solve(int argc, char **argv)
 		{
 			delta1 = Do_Step(0, omega);
 		}
+		timer_exchange_borders_start_1 = MPI_Wtime();
 		Exchange_Borders();
+		timer_exchange_borders_stop_1 = MPI_Wtime();
 
 		Debug("Do_Step 1", 0);
 		for (i = 0; i < border_exchange_factor; i++)
 		{
 			delta2 = Do_Step(1, omega);
 		}
+		timer_exchange_borders_start_2 = MPI_Wtime();
 		Exchange_Borders();
+		timer_exchange_borders_stop_2 = MPI_Wtime();
+
+		timer_exchange_borders = (timer_exchange_borders_stop_1 - timer_exchange_borders_start_1) +
+		                         (timer_exchange_borders_stop_2 - timer_exchange_borders_start_2);
+
+		timer_exchange_borders_total += timer_exchange_borders;
 
 		delta = max(delta1, delta2);
 		if (count % 1 == 0) /* switch of adjusting the frequency of calling MPI_Allreduce */
@@ -351,7 +365,8 @@ void Solve(int argc, char **argv)
 	if (!PROFILING)
 		printf("Rank of process: %i\t Number of iterations: %i\n", proc_rank, count);
 	else
-		fprintf(fprof, "Rank of process:\t %i\t Number of iterations:\t %i\n", proc_rank, count);
+		fprintf(fprof, "Rank of process:\t %i\t Number of iterations:\t %i\t Time for exchanging borders (s):\t %14.6f\n",
+		        proc_rank, count, timer_exchange_borders_total);
 
 	fclose(fprof);
 	fclose(f_err);
