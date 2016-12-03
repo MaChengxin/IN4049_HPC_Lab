@@ -18,16 +18,28 @@ run: compile
 clean:
 	rm -f output*.dat $(EXEC) profile*.csv error*.csv
 
-profile:
-	make RELAX_FACTOR=1.90 run
-	make RELAX_FACTOR=1.91 run
-	make RELAX_FACTOR=1.92 run
-	make RELAX_FACTOR=1.93 run
-	make RELAX_FACTOR=1.94 run
-	make RELAX_FACTOR=1.95 run
-	make RELAX_FACTOR=1.96 run
-	make RELAX_FACTOR=1.97 run
-	make RELAX_FACTOR=1.98 run
-	make RELAX_FACTOR=1.99 run
+exp-2-2:
+	make run RELAX_FACTOR=1.90
+	make run RELAX_FACTOR=1.91
+	make run RELAX_FACTOR=1.92
+	make run RELAX_FACTOR=1.93
+	make run RELAX_FACTOR=1.94
+	make run RELAX_FACTOR=1.95
+	make run RELAX_FACTOR=1.96
+	make run RELAX_FACTOR=1.97
+	make run RELAX_FACTOR=1.98
+	make run RELAX_FACTOR=1.99
 
-.PHONY: compile run clean profile
+exp-2-8:
+	make run BORDER_EXCHANGE_FACTOR=1
+	make run BORDER_EXCHANGE_FACTOR=2
+	make run BORDER_EXCHANGE_FACTOR=3
+	make run BORDER_EXCHANGE_FACTOR=4
+	make run BORDER_EXCHANGE_FACTOR=5
+	make run BORDER_EXCHANGE_FACTOR=6
+	make run BORDER_EXCHANGE_FACTOR=7
+	make run BORDER_EXCHANGE_FACTOR=8
+	make run BORDER_EXCHANGE_FACTOR=9
+	make run BORDER_EXCHANGE_FACTOR=10
+
+.PHONY: compile run clean exp-2-2 exp-2-8

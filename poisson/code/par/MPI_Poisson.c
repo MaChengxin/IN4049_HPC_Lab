@@ -305,15 +305,21 @@ void Solve(int argc, char **argv)
 
 	while (global_delta > precision_goal && count < max_iter)
 	{
+		int i = 0;
+
 		Debug("Do_Step 0", 0);
-		delta1 = Do_Step(0, omega);
-		if (count % border_exchange_factor == 0)
-			Exchange_Borders();
+		for (i = 0; i < border_exchange_factor; i++)
+		{
+			delta1 = Do_Step(0, omega);
+		}
+		Exchange_Borders();
 
 		Debug("Do_Step 1", 0);
-		delta2 = Do_Step(1, omega);
-		if (count % border_exchange_factor == 0)
-			Exchange_Borders();
+		for (i = 0; i < border_exchange_factor; i++)
+		{
+			delta2 = Do_Step(1, omega);
+		}
+		Exchange_Borders();
 
 		delta = max(delta1, delta2);
 		if (count % 1 == 0) /* switch of adjusting the frequency of calling MPI_Allreduce */
