@@ -317,27 +317,29 @@ void Solve(int argc, char **argv)
 		int i = 0;
 
 		Debug("Do_Step 0", 0);
-		for (i = 0; i < border_exchange_factor; i++)
+		delta1 = Do_Step(0, omega);
+		if (count % border_exchange_factor == 0)
 		{
-			delta1 = Do_Step(0, omega);
+			timer_exchange_borders_start_1 = MPI_Wtime();
+			Exchange_Borders();
+			timer_exchange_borders_stop_1 = MPI_Wtime();
 		}
-		timer_exchange_borders_start_1 = MPI_Wtime();
-		Exchange_Borders();
-		timer_exchange_borders_stop_1 = MPI_Wtime();
 
 		Debug("Do_Step 1", 0);
-		for (i = 0; i < border_exchange_factor; i++)
+		delta2 = Do_Step(1, omega);
+		if (count % border_exchange_factor == 0)
 		{
-			delta2 = Do_Step(1, omega);
+			timer_exchange_borders_start_2 = MPI_Wtime();
+			Exchange_Borders();
+			timer_exchange_borders_stop_2 = MPI_Wtime();
 		}
-		timer_exchange_borders_start_2 = MPI_Wtime();
-		Exchange_Borders();
-		timer_exchange_borders_stop_2 = MPI_Wtime();
 
-		timer_exchange_borders = (timer_exchange_borders_stop_1 - timer_exchange_borders_start_1) +
-		                         (timer_exchange_borders_stop_2 - timer_exchange_borders_start_2);
-
-		timer_exchange_borders_total += timer_exchange_borders;
+		if (count % border_exchange_factor == 0)
+		{
+			timer_exchange_borders = (timer_exchange_borders_stop_1 - timer_exchange_borders_start_1) +
+			                         (timer_exchange_borders_stop_2 - timer_exchange_borders_start_2);
+			timer_exchange_borders_total += timer_exchange_borders;
+		}
 
 		delta = max(delta1, delta2);
 		if (count % 1 == 0) /* switch of adjusting the frequency of calling MPI_Allreduce */
