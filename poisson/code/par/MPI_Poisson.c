@@ -272,6 +272,7 @@ void Solve(int argc, char **argv)
 
 	FILE *fprof;
 	FILE *f_err;
+	FILE *f_border_info;
 
 	char profile_filename[40];
 	sprintf(profile_filename, "profile_%i.csv", gridsize[X_DIR]);
@@ -281,6 +282,11 @@ void Solve(int argc, char **argv)
 	char error_filename[40];
 	sprintf(error_filename, "error_%i.csv", gridsize[X_DIR]);
 	if ((f_err = fopen(error_filename, "a")) == NULL)
+		Debug("Solve : fopen failed", 1);
+
+	char border_filename[40];
+	sprintf(border_filename, "border_exchange_info_%i.dat", gridsize[X_DIR]);
+	if ((f_border_info = fopen(border_filename, "a")) == NULL)
 		Debug("Solve : fopen failed", 1);
 
 	if (argc > 3)
@@ -367,11 +373,15 @@ void Solve(int argc, char **argv)
 	if (!PROFILING)
 		printf("Rank of process: %i\t Number of iterations: %i\n", proc_rank, count);
 	else
-		fprintf(fprof, "Rank of process:\t %i\t Number of iterations:\t %i\t Time for exchanging borders (s):\t %14.6f\n",
-		        proc_rank, count, timer_exchange_borders_total);
+	{
+		fprintf(fprof, "Rank of process:\t %i\t Number of iterations:\t %i\n", proc_rank, count);
+		fprintf(fprof, "Rank of process:\t %i\t Time for exchanging borders (s):\t %.6f\n", proc_rank, timer_exchange_borders_total);
+		fprintf(f_border_info, "%i\t%.6f\n", proc_rank, timer_exchange_borders_total);
+	}
 
 	fclose(fprof);
 	fclose(f_err);
+	fclose(f_border_info);
 }
 
 void Write_Grid()

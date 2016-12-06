@@ -42,4 +42,9 @@ exp-2-8:
 	make run BORDER_EXCHANGE_FACTOR=9
 	make run BORDER_EXCHANGE_FACTOR=10
 
-.PHONY: compile run clean exp-2-2 exp-2-8
+exp-2-11:
+	for i in 1 2 3 4 5 6 7 8 9 10 ; \
+		do make run ; \
+	done
+
+.PHONY: compile run clean exp-2-2 exp-2-8 exp-2-11
