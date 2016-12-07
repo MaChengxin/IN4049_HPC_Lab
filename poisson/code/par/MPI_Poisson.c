@@ -315,13 +315,11 @@ void Solve(int argc, char **argv)
 
 	Debug("Solve", 0);
 
-	/* give global_delta a higher value then precision_goal */
+	/* give global_delta a higher value than precision_goal */
 	global_delta = 2 * precision_goal;
 
 	while (global_delta > precision_goal && count < max_iter)
 	{
-		int i = 0;
-
 		Debug("Do_Step 0", 0);
 		delta1 = Do_Step(0, omega);
 		if (count % border_exchange_factor == 0)
