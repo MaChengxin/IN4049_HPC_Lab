@@ -16,7 +16,7 @@ run: compile
 	prun -v -np $(NODES_NUM) -$(CORES_NUM) -sge-script $$PRUN_ETC/prun-openmpi ./$(EXEC) $(P_GRID_X) $(P_GRID_Y) $(RELAX_FACTOR) $(BORDER_EXCHANGE_FACTOR)
 
 clean:
-	rm -f output*.dat $(EXEC) profile*.csv error*.csv
+	rm -f output*.dat $(EXEC) profile*.csv error*.csv border_exchange_info*.dat
 
 exp-2-2:
 	make run RELAX_FACTOR=1.90
