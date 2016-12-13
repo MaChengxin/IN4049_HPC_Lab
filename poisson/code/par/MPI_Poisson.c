@@ -369,10 +369,10 @@ void Solve(int argc, char **argv)
 	}
 
 	if (!PROFILING)
-		printf("Rank of process: %i\t Number of iterations: %i\n", proc_rank, count);
+		printf("Rank of process: %i\t Number of iterations: %i\n", proc_rank, count / border_exchange_factor);
 	else
 	{
-		fprintf(fprof, "Rank of process:\t %i\t Number of iterations:\t %i\n", proc_rank, count);
+		fprintf(fprof, "Rank of process:\t %i\t Number of iterations:\t %i\n", proc_rank, count / border_exchange_factor);
 		fprintf(fprof, "Rank of process:\t %i\t Time for exchanging borders (s):\t %.6f\n", proc_rank, timer_exchange_borders_total);
 		fprintf(f_border_info, "%i\t%.6f\n", proc_rank, timer_exchange_borders_total);
 	}
