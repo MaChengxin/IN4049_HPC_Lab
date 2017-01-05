@@ -1,5 +1,8 @@
 CC = mpicc
 
+NODES_NUM = 1
+CORES_NUM = 4
+
 FP_LIBS = -lm
 GD_LIBS = -lm
 
@@ -22,3 +25,8 @@ MPI_Fempois.o:
 
 GridDist.o:
 	gcc -c GridDist.c
+
+run:
+	prun -v -np $(NODES_NUM) -$(CORES_NUM) -sge-script $$PRUN_ETC/prun-openmpi ./MPI_Fempois
+
+.PHONY: run
