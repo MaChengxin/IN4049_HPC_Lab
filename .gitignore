@@ -1,0 +1,5 @@
+# Figures
+*.png
+
+# Result CSV
+result.csv

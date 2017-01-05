@@ -10,6 +10,7 @@
 #include <time.h>
 
 #define DEBUG 0
+#define PROFILING 1
 
 #define max(a,b) ((a)>(b)?a:b)
 #define ceildiv(a,b) (1+((a)-1)/(b))
@@ -41,6 +42,11 @@ clock_t ticks;			/* number of systemticks */
 int timer_on = 0;		/* is timer running? */
 double wtime;               /*wallclock time*/
 
+double timer_exchange_borders_total = 0.0;
+double timer_exchange_borders;
+double timer_exchange_borders_start_1, timer_exchange_borders_stop_1;
+double timer_exchange_borders_start_2, timer_exchange_borders_stop_2;
+
 /* local grid related variables */
 double **phi;			/* grid */
 int **source;			/* TRUE if subgrid element is a source */
@@ -48,8 +54,8 @@ int dim[2];			/* grid dimensions */
 int offset[2];
 
 void Setup_Grid();
-double Do_Step(int parity);
-void Solve();
+double Do_Step(int parity, double omega);
+void Solve(int argc, char **argv);
 void Write_Grid();
 void Clean_Up();
 void Setup_Proc_Grid(int argc, char **argv);
@@ -97,16 +103,34 @@ void stop_timer()
 
 void print_timer()
 {
+	FILE *fprof;
+	char profile_filename[40];
+	sprintf(profile_filename, "profile_%i.csv", gridsize[X_DIR]);
+	if ((fprof = fopen(profile_filename, "a")) == NULL)
+		Debug("print_timer : fopen failed", 1);
+
 	if (timer_on)
 	{
 		stop_timer();
-		printf("Rank of process: %i\t Elapsed Wtime: %14.6f s \t (%5.1f%% CPU)\n",
-		       proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
+		if (!PROFILING)
+			printf("Rank of process: %i\t Elapsed Wtime: %14.6f s \t (%5.1f%% CPU)\n",
+			       proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
+		else
+			fprintf(fprof, "Rank of process:\t %i\t Elapsed Wtime (s):\t %.6f\n",
+			        proc_rank, wtime);
 		resume_timer();
 	}
 	else
-		printf("Rank of process: %i\t Elapsed Wtime: %14.6f s \t (%5.1f%% CPU)\n",
-		       proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
+	{
+		if (!PROFILING)
+			printf("Rank of process: %i\t Elapsed Wtime: %14.6f s \t (%5.1f%% CPU)\n",
+			       proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
+		else
+			fprintf(fprof, "Rank of process:\t %i\t Elapsed Wtime (s):\t %.6f\n",
+			        proc_rank, wtime);
+	}
+
+	fclose(fprof);
 }
 
 void Debug(char *mesg, int terminate)
@@ -209,55 +233,153 @@ void Setup_Grid()
 		fclose(f);
 }
 
-double Do_Step(int parity)
+double Do_Step(int parity, double omega)
 {
 	int x, y;
 	double old_phi;
 	double max_err = 0.0;
+	int y_offset = 0;
 
 	/* calculate interior of grid */
 	for (x = 1; x < dim[X_DIR] - 1; x++)
-		for (y = 1; y < dim[Y_DIR] - 1; y++)
-			if ((x + offset[X_DIR] + y + offset[Y_DIR]) % 2 == parity && source[x][y] != 1)
+	{
+		y_offset = ( x + offset[X_DIR] + offset[Y_DIR] + parity - 1) % 2;
+		for (y = 1 + y_offset; y < dim[Y_DIR] - 1; y += 2)
+			if (source[x][y] != 1)
 			{
 				old_phi = phi[x][y];
 				phi[x][y] = (phi[x + 1][y] + phi[x - 1][y] +
-				             phi[x][y + 1] + phi[x][y - 1]) * 0.25;
+				             phi[x][y + 1] + phi[x][y - 1]) * 0.25 * omega
+				            +
+				            old_phi * (1 - omega);
 				if (max_err < fabs(old_phi - phi[x][y]))
 					max_err = fabs(old_phi - phi[x][y]);
 			}
+	}
 
 	return max_err;
 }
 
-void Solve()
+void Solve(int argc, char **argv)
 {
 	int count = 0;
 	double delta;
 	double delta1, delta2;
 	double global_delta;
+	double omega;
+	int border_exchange_factor;
+	double base_time, curr_elapsed_time;
+
+	FILE *fprof;
+	FILE *f_err;
+	FILE *f_border_info;
+
+	char profile_filename[40];
+	sprintf(profile_filename, "profile_%i.csv", gridsize[X_DIR]);
+	if ((fprof = fopen(profile_filename, "a")) == NULL)
+		Debug("Solve : fopen failed", 1);
+
+	char error_filename[40];
+	sprintf(error_filename, "error_%i.csv", gridsize[X_DIR]);
+	if ((f_err = fopen(error_filename, "a")) == NULL)
+		Debug("Solve : fopen failed", 1);
+
+	char border_filename[40];
+	sprintf(border_filename, "border_exchange_info_%i.dat", gridsize[X_DIR]);
+	if ((f_border_info = fopen(border_filename, "a")) == NULL)
+		Debug("Solve : fopen failed", 1);
+
+	if (argc > 3)
+	{
+		omega =  atof(argv[3]);
+		if (proc_rank == 0) /* only process 0 may execute this if-statement such that it is only printed once */
+		{
+			if (!PROFILING)
+				printf("The overrelaxation coefficient (omega) passed from command line is %.3f\n", omega);
+			else
+				fprintf(fprof, "\nThe overrelaxation coefficient (omega) passed from command line is\t %.3f\n", omega);
+		}
+	}
+
+	if (argc > 4)
+	{
+		border_exchange_factor =  atoi(argv[4]);
+		if (proc_rank == 0) /* only process 0 may execute this if-statement such that it is only printed once */
+		{
+			if (!PROFILING)
+				printf("The border exchange factor passed from command line is %i\n", border_exchange_factor);
+			else
+				fprintf(fprof, "The border exchange factor passed from command line is\t %i\n", border_exchange_factor);
+		}
+	}
 
 	Debug("Solve", 0);
 
-	/* give global_delta a higher value then precision_goal */
+	/* give global_delta a higher value than precision_goal */
 	global_delta = 2 * precision_goal;
 
 	while (global_delta > precision_goal && count < max_iter)
 	{
 		Debug("Do_Step 0", 0);
-		delta1 = Do_Step(0);
-		Exchange_Borders();
+		delta1 = Do_Step(0, omega);
+		if (count % border_exchange_factor == 0)
+		{
+			timer_exchange_borders_start_1 = MPI_Wtime();
+			Exchange_Borders();
+			timer_exchange_borders_stop_1 = MPI_Wtime();
+		}
 
 		Debug("Do_Step 1", 0);
-		delta2 = Do_Step(1);
-		Exchange_Borders();
+		delta2 = Do_Step(1, omega);
+		if (count % border_exchange_factor == 0)
+		{
+			timer_exchange_borders_start_2 = MPI_Wtime();
+			Exchange_Borders();
+			timer_exchange_borders_stop_2 = MPI_Wtime();
+		}
+
+		if (count % border_exchange_factor == 0)
+		{
+			timer_exchange_borders = (timer_exchange_borders_stop_1 - timer_exchange_borders_start_1) +
+			                         (timer_exchange_borders_stop_2 - timer_exchange_borders_start_2);
+			timer_exchange_borders_total += timer_exchange_borders;
+		}
 
 		delta = max(delta1, delta2);
-		MPI_Allreduce(&delta, &global_delta, 1, MPI_DOUBLE, MPI_MAX, grid_comm);
+		if (count % 1 == 0) /* switch of adjusting the frequency of calling MPI_Allreduce */
+			MPI_Allreduce(&delta, &global_delta, 1, MPI_DOUBLE, MPI_MAX, grid_comm);
 		count++;
+
+		if (PROFILING && proc_rank == 0)
+		{
+			if (count == 1)
+			{
+				// fprintf(f_err, "The overrelaxation coefficient (omega) passed from command line is\t %.3f\n", omega);
+				// fprintf(f_err, "The border exchange factor passed from command line is\t %i\n", border_exchange_factor);
+				base_time = MPI_Wtime();
+				curr_elapsed_time = 0.0;
+				fprintf(f_err, "Number of iterations:\t %i\t Error:\t %.6f\t Elapsed time:\t %14.6f\n", count, delta, curr_elapsed_time);
+			}
+			else
+			{
+				curr_elapsed_time = MPI_Wtime() - base_time;
+				fprintf(f_err, "Number of iterations:\t %i\t Error:\t %.6f\t Elapsed time:\t %14.6f\n", count, delta, curr_elapsed_time);
+			}
+		}
 	}
 
-	printf("Rank of process: %i\t Number of iterations: %i\n", proc_rank, count);
+	if (!PROFILING)
+		printf("Rank of process: %i\t Number of iterations: %i\n", proc_rank, count / border_exchange_factor);
+	else
+	{
+		fprintf(fprof, "Rank of process:\t %i\t Number of iterations:\t %i\n", proc_rank, count / border_exchange_factor);
+		fprintf(fprof, "Rank of process:\t %i\t Time for exchanging borders (s):\t %.6f\n", proc_rank, timer_exchange_borders_total);
+		fprintf(f_border_info, "%i\t%.6f\n", proc_rank, timer_exchange_borders_total);
+	}
+
+	fclose(fprof);
+	fclose(f_err);
+	fclose(f_border_info);
 }
 
 void Write_Grid()
@@ -359,7 +481,8 @@ void Setup_Proc_Grid(int argc, char **argv)
 	MPI_Comm_rank(grid_comm, &proc_rank); /* Rank of process in new communicator */
 	MPI_Cart_coords(grid_comm, proc_rank, 2, proc_coord); /* Coordinates of a process in the new communicator */
 
-	printf("The coordinates of process %i is (%i,%i)\n", proc_rank, proc_coord[X_DIR], proc_coord[Y_DIR]);
+	if (!PROFILING)
+		printf("The coordinates of process %i is (%i,%i)\n", proc_rank, proc_coord[X_DIR], proc_coord[Y_DIR]);
 
 	/* Calculate ranks of neighbouring processes */
 	MPI_Cart_shift(grid_comm, Y_DIR, 1, &proc_top, &proc_bottom); /* Rank of processes proc_top and proc_bottom */
@@ -416,7 +539,7 @@ int main(int argc, char **argv)
 
 	Setup_MPI_Datatypes();
 
-	Solve();
+	Solve(argc, argv);
 
 	Write_Grid();
 

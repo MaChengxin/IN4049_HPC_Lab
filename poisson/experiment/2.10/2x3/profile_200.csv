@@ -1,0 +1,15 @@
+
+The overrelaxation coefficient (omega) passed from command line is	 1.950
+The border exchange factor passed from command line is	 1
+Rank of process:	 0	 Number of iterations:	 382	 Time for exchanging borders (s):	       0.052924
+Rank of process:	 1	 Number of iterations:	 382	 Time for exchanging borders (s):	       0.060504
+Rank of process:	 2	 Number of iterations:	 382	 Time for exchanging borders (s):	       0.050386
+Rank of process:	 4	 Number of iterations:	 382	 Time for exchanging borders (s):	       0.007618
+Rank of process:	 3	 Number of iterations:	 382	 Time for exchanging borders (s):	       0.009911
+Rank of process:	 5	 Number of iterations:	 382	 Time for exchanging borders (s):	       0.060020
+Rank of process:	 1	 Elapsed Wtime (s):	 0.134302
+Rank of process:	 2	 Elapsed Wtime (s):	 0.137782
+Rank of process:	 3	 Elapsed Wtime (s):	 0.141370
+Rank of process:	 4	 Elapsed Wtime (s):	 0.144983
+Rank of process:	 5	 Elapsed Wtime (s):	 0.148580
+Rank of process:	 0	 Elapsed Wtime (s):	 0.153857

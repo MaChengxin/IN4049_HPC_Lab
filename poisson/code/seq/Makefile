@@ -1,4 +1,4 @@
-CC=icc
+CC=gcc
 SRC=SEQ_Poisson.c
 EXEC=SEQ_Poisson
 
