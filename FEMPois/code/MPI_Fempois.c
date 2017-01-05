@@ -34,31 +34,31 @@ typedef struct
 Matrixrow;
 
 /* global variables */
-double precision_goal;		/* precision_goal of solution */
-int max_iter;			/* maximum number of iterations alowed */
-int P;				/* total number of processes */
-int P_grid[2];			/* processgrid dimensions */
-MPI_Comm grid_comm;		/* grid COMMUNICATOR */
+double precision_goal;    /* precision_goal of solution */
+int max_iter;     /* maximum number of iterations alowed */
+int P;        /* total number of processes */
+int P_grid[2];      /* processgrid dimensions */
+MPI_Comm grid_comm;   /* grid COMMUNICATOR */
 MPI_Status status;
 
 /* benchmark related variables */
-clock_t ticks;			/* number of systemticks */
-double wtime;			/* wallclock time */
-int timer_on = 0;		/* is timer running? */
+clock_t ticks;      /* number of systemticks */
+double wtime;     /* wallclock time */
+int timer_on = 0;   /* is timer running? */
 
 /* local process related variables */
-int proc_rank;			/* rank of current process */
-int proc_coord[2];		/* coordinates of current procces in processgrid */
-int N_neighb;			/* Number of neighbouring processes */
-int *proc_neighb;		/* ranks of neighbouring processes */
-MPI_Datatype *send_type;	/* MPI Datatypes for sending */
-MPI_Datatype *recv_type;	/* MPI Datatypes for receiving */
+int proc_rank;      /* rank of current process */
+int proc_coord[2];    /* coordinates of current procces in processgrid */
+int N_neighb;     /* Number of neighbouring processes */
+int *proc_neighb;   /* ranks of neighbouring processes */
+MPI_Datatype *send_type;  /* MPI Datatypes for sending */
+MPI_Datatype *recv_type;  /* MPI Datatypes for receiving */
 
 /* local grid related variables */
-Vertex *vert;			/* vertices */
-double *phi;			/* vertex values */
-int N_vert;			/* number of vertices */
-Matrixrow *A;			/* matrix A */
+Vertex *vert;     /* vertices */
+double *phi;      /* vertex values */
+int N_vert;     /* number of vertices */
+Matrixrow *A;     /* matrix A */
 
 void Setup_Proc_Grid();
 void Setup_Grid();
@@ -90,8 +90,8 @@ void resume_timer()
 {
   if (!timer_on)
   {
-    ticks = clock()-ticks;
-    wtime = MPI_Wtime()-wtime;
+    ticks = clock() - ticks;
+    wtime = MPI_Wtime() - wtime;
     timer_on = 1;
   }
 }
@@ -112,12 +112,12 @@ void print_timer()
   {
     stop_timer();
     printf("(%i) Elapsed Wtime: %14.6f s (%5.1f%% CPU)\n",
-	   proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
+           proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
     resume_timer();
   }
   else
     printf("(%i) Elapsed Wtime: %14.6f s (%5.1f%% CPU)\n",
-	   proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
+           proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
 }
 
 void Debug(char *mesg, int terminate)
@@ -161,7 +161,7 @@ void Setup_Proc_Grid()
     N_nodes = P;
 
   if ((index = malloc(N_nodes * sizeof(int))) == NULL)
-      Debug("My_MPI_Init : malloc(index) failed", 1);
+    Debug("My_MPI_Init : malloc(index) failed", 1);
 
   if (proc_rank == 0)
   {
@@ -172,7 +172,7 @@ void Setup_Proc_Grid()
   MPI_Bcast(index, N_nodes, MPI_INT, 0, MPI_COMM_WORLD);
 
   N_edges = index[N_nodes - 1];
-  if (N_edges>0)
+  if (N_edges > 0)
   {
     if ((edges = malloc(N_edges * sizeof(int))) == NULL)
       Debug("My_MPI_Init : malloc(edges) failed", 1);
@@ -183,7 +183,7 @@ void Setup_Proc_Grid()
 
   if (proc_rank == 0)
   {
-    fscanf(f, "%*[^\n]\n");		/* skip a line of the file */
+    fscanf(f, "%*[^\n]\n");   /* skip a line of the file */
     for (i = 0; i < N_edges; i++)
       fscanf(f, "%i\n", &edges[i]);
 
@@ -198,7 +198,7 @@ void Setup_Proc_Grid()
   /* Retrieve new rank of this process */
   MPI_Comm_rank(grid_comm, &proc_rank);
 
-  if (N_edges>0)
+  if (N_edges > 0)
     free(edges);
   free(index);
 }
@@ -214,7 +214,7 @@ void Setup_Grid()
   Debug("Setup_Grid", 0);
 
   /* read general parameters (precision/max_iter) */
-  if (proc_rank==0)
+  if (proc_rank == 0)
   {
     if ((f = fopen("input.dat", "r")) == NULL)
       Debug("Setup_Grid : Can't open input.dat", 1);
@@ -239,24 +239,24 @@ void Setup_Grid()
 
   if ((A = malloc(N_vert * sizeof(*A))) == NULL)
     Debug("Setup_Grid : malloc(*A) failed", 1);
-  for (i=0; i<N_vert; i++)
+  for (i = 0; i < N_vert; i++)
   {
-    if ((A[i].col=malloc(MAXCOL*sizeof(int)))==NULL)
+    if ((A[i].col = malloc(MAXCOL * sizeof(int))) == NULL)
       Debug("Setup_Grid : malloc(A.col) failed", 1);
-    if ((A[i].val=malloc(MAXCOL*sizeof(double)))==NULL)
+    if ((A[i].val = malloc(MAXCOL * sizeof(double))) == NULL)
       Debug("Setup_Grid : malloc(A.val) failed", 1);
   }
 
   /* init matrix rows of A */
   for (i = 0; i < N_vert; i++)
-      A[i].Ncol = 0;
+    A[i].Ncol = 0;
 
   /* Read all values */
   for (i = 0; i < N_vert; i++)
   {
     fscanf(f, "%i", &v);
     fscanf(f, "%lf %lf %i %lf\n", &vert[v].x, &vert[v].y,
-	   &vert[v].type, &phi[v]);
+           &vert[v].type, &phi[v]);
   }
 
   /* build matrix from elements */
@@ -281,18 +281,18 @@ void Setup_Grid()
 void Add_To_Matrix(int i, int j, double a)
 {
   int k;
-  k=0;
-  
-  while ( (k<A[i].Ncol) && (A[i].col[k]!=j) )
+  k = 0;
+
+  while ( (k < A[i].Ncol) && (A[i].col[k] != j) )
     k++;
-  if (k<A[i].Ncol)
-    A[i].val[k]+=a;
+  if (k < A[i].Ncol)
+    A[i].val[k] += a;
   else
   {
-    if (A[i].Ncol>=MAXCOL)
+    if (A[i].Ncol >= MAXCOL)
       Debug("Add_To_Matrix : MAXCOL exceeded", 1);
-    A[i].val[A[i].Ncol]=a;
-    A[i].col[A[i].Ncol]=j;
+    A[i].val[A[i].Ncol] = a;
+    A[i].col[A[i].Ncol] = j;
     A[i].Ncol++;
   }
 }
@@ -304,12 +304,12 @@ void Build_ElMatrix(Element el)
   double s[3][3];
   double det;
 
-  e[0][0] = vert[el[1]].y - vert[el[2]].y;	/* y1-y2 */
-  e[1][0] = vert[el[2]].y - vert[el[0]].y;	/* y2-y0 */
-  e[2][0] = vert[el[0]].y - vert[el[1]].y;	/* y0-y1 */
-  e[0][1] = vert[el[2]].x - vert[el[1]].x;	/* x2-x1 */
-  e[1][1] = vert[el[0]].x - vert[el[2]].x;	/* x0-x2 */
-  e[2][1] = vert[el[1]].x - vert[el[0]].x;	/* x1-x0 */
+  e[0][0] = vert[el[1]].y - vert[el[2]].y;  /* y1-y2 */
+  e[1][0] = vert[el[2]].y - vert[el[0]].y;  /* y2-y0 */
+  e[2][0] = vert[el[0]].y - vert[el[1]].y;  /* y0-y1 */
+  e[0][1] = vert[el[2]].x - vert[el[1]].x;  /* x2-x1 */
+  e[1][1] = vert[el[0]].x - vert[el[2]].x;  /* x0-x2 */
+  e[2][1] = vert[el[1]].x - vert[el[0]].x;  /* x1-x0 */
 
   det = e[2][0] * e[0][1] - e[2][1] * e[0][0];
   if (det == 0.0)
@@ -323,9 +323,9 @@ void Build_ElMatrix(Element el)
 
   for (i = 0; i < 3; i++)
     if (!((vert[el[i]].type & TYPE_GHOST) |
-	  (vert[el[i]].type & TYPE_SOURCE)))
+          (vert[el[i]].type & TYPE_SOURCE)))
       for (j = 0; j < 3; j++)
-        Add_To_Matrix(el[i],el[j],s[i][j]);
+        Add_To_Matrix(el[i], el[j], s[i][j]);
 }
 
 void Sort_MPI_Datatypes()
@@ -334,12 +334,12 @@ void Sort_MPI_Datatypes()
   MPI_Datatype data2;
   int proc2;
 
-  for (i=0;i<N_neighb-1;i++)
-    for (j=i+1;j<N_neighb;j++)
-      if (proc_neighb[j]<proc_neighb[i])
+  for (i = 0; i < N_neighb - 1; i++)
+    for (j = i + 1; j < N_neighb; j++)
+      if (proc_neighb[j] < proc_neighb[i])
       {
         proc2 = proc_neighb[i];
-        proc_neighb[i] = proc_neighb[j]; 
+        proc_neighb[i] = proc_neighb[j];
         proc_neighb[j] = proc2;
         data2 = send_type[i];
         send_type[i] = send_type[j];
@@ -363,10 +363,10 @@ void Setup_MPI_Datatypes(FILE * f)
 
   /* allocate memory */
 
-  if (N_neighb>0)
+  if (N_neighb > 0)
   {
     if ((proc_neighb = malloc(N_neighb * sizeof(int))) == NULL)
-        Debug("Setup_MPI_Datatypes: malloc(proc_neighb) failed", 1);
+      Debug("Setup_MPI_Datatypes: malloc(proc_neighb) failed", 1);
     if ((send_type = malloc(N_neighb * sizeof(MPI_Datatype))) == NULL)
       Debug("Setup_MPI_Datatypes: malloc(send_type) failed", 1);
     if ((recv_type = malloc(N_neighb * sizeof(MPI_Datatype))) == NULL)
@@ -380,9 +380,9 @@ void Setup_MPI_Datatypes(FILE * f)
   }
 
   if ((indices = malloc(N_vert * sizeof(int))) == NULL)
-      Debug("Setup_MPI_Datatypes: malloc(indices) failed", 1);
+    Debug("Setup_MPI_Datatypes: malloc(indices) failed", 1);
   if ((blocklens = malloc(N_vert * sizeof(int))) == NULL)
-      Debug("Setup_MPI_Datatypes: malloc(blocklens) failed", 1);
+    Debug("Setup_MPI_Datatypes: malloc(blocklens) failed", 1);
 
   for (i = 0; i < N_vert; i++)
     blocklens[i] = 1;
@@ -397,7 +397,7 @@ void Setup_MPI_Datatypes(FILE * f)
     {
       s = fscanf(f, "%i", &indices[count]);
       if ((s == 1) && !(vert[indices[count]].type & TYPE_SOURCE))
-	count++;
+        count++;
     }
     fscanf(f, "\n");
     MPI_Type_indexed(count, blocklens, indices, MPI_DOUBLE, &recv_type[i]);
@@ -410,7 +410,7 @@ void Setup_MPI_Datatypes(FILE * f)
     {
       s = fscanf(f, "%i", &indices[count]);
       if ((s == 1) && !(vert[indices[count]].type & TYPE_SOURCE))
-	count++;
+        count++;
     }
     fscanf(f, "\n");
     MPI_Type_indexed(count, blocklens, indices, MPI_DOUBLE, &send_type[i]);
@@ -431,8 +431,8 @@ void Exchange_Borders(double *vect)
 
   for (i = 0; i < N_neighb; i++)
     MPI_Sendrecv(vect, 1, send_type[i], proc_neighb[i], 0,
-		 vect, 1, recv_type[i], proc_neighb[i], 0,
-		 grid_comm, &status);
+                 vect, 1, recv_type[i], proc_neighb[i], 0,
+                 grid_comm, &status);
 }
 
 void Solve()
@@ -447,11 +447,11 @@ void Solve()
   Debug("Solve", 0);
 
   if ((r = malloc(N_vert * sizeof(double))) == NULL)
-      Debug("Solve : malloc(r) failed", 1);
+    Debug("Solve : malloc(r) failed", 1);
   if ((p = malloc(N_vert * sizeof(double))) == NULL)
-      Debug("Solve : malloc(p) failed", 1);
+    Debug("Solve : malloc(p) failed", 1);
   if ((q = malloc(N_vert * sizeof(double))) == NULL)
-      Debug("Solve : malloc(q) failed", 1);
+    Debug("Solve : malloc(q) failed", 1);
 
   /* Implementation of the CG algorithm : */
 
@@ -472,14 +472,14 @@ void Solve()
     sub = 0.0;
     for (i = 0; i < N_vert; i++)
       if (!(vert[i].type & TYPE_GHOST))
-	sub += r[i] * r[i];
+        sub += r[i] * r[i];
     MPI_Allreduce(&sub, &r1, 1, MPI_DOUBLE, MPI_SUM, grid_comm);
 
     if (count == 0)
     {
       /* p = r */
       for (i = 0; i < N_vert; i++)
-	p[i] = r[i];
+        p[i] = r[i];
     }
     else
     {
@@ -487,7 +487,7 @@ void Solve()
 
       /* p = r + b*p */
       for (i = 0; i < N_vert; i++)
-	p[i] = r[i] + b * p[i];
+        p[i] = r[i] + b * p[i];
     }
     Exchange_Borders(p);
 
@@ -503,7 +503,7 @@ void Solve()
     sub = 0.0;
     for (i = 0; i < N_vert; i++)
       if (!(vert[i].type & TYPE_GHOST))
-	sub += p[i] * q[i];
+        sub += p[i] * q[i];
     MPI_Allreduce(&sub, &a, 1, MPI_DOUBLE, MPI_SUM, grid_comm);
     a = r1 / a;
 
@@ -551,14 +551,14 @@ void Clean_Up()
   int i;
   Debug("Clean_Up", 0);
 
-  if (N_neighb>0)
+  if (N_neighb > 0)
   {
     free(recv_type);
     free(send_type);
     free(proc_neighb);
   }
 
-  for (i=0;i<N_vert;i++)
+  for (i = 0; i < N_vert; i++)
   {
     free(A[i].col);
     free(A[i].val);
@@ -592,4 +592,3 @@ int main(int argc, char **argv)
 
   return 0;
 }
-
