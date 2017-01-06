@@ -46,6 +46,20 @@ clock_t ticks;      /* number of systemticks */
 double wtime;     /* wallclock time */
 int timer_on = 0;   /* is timer running? */
 
+double timer_computation_total = 0.0;
+double timer_computation;
+double timer_computation_start, timer_computation_stop;
+
+double timer_exchange_borders_total = 0.0;
+double timer_exchange_borders;
+double timer_exchange_borders_start, timer_exchange_borders_stop;
+
+double timer_global_comm_total = 0.0;
+double timer_global_comm;
+double timer_global_comm_start, timer_global_comm_stop;
+
+double timer_idle;
+
 /* local process related variables */
 int proc_rank;      /* rank of current process */
 int proc_coord[2];    /* coordinates of current procces in processgrid */
@@ -113,11 +127,17 @@ void print_timer()
 		stop_timer();
 		printf("(%i) Elapsed Wtime: %14.6f s (%5.1f%% CPU)\n",
 		       proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
+		timer_idle = wtime - timer_computation_total - timer_exchange_borders_total - timer_global_comm_total;
+		printf("(%i) Idle time: %14.6f s \n", proc_rank, timer_idle);
 		resume_timer();
 	}
 	else
+	{
 		printf("(%i) Elapsed Wtime: %14.6f s (%5.1f%% CPU)\n",
 		       proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
+		timer_idle = wtime - timer_computation_total - timer_exchange_borders_total - timer_global_comm_total;
+		printf("(%i) Idle time: %14.6f s \n", proc_rank, timer_idle);
+	}
 }
 
 void Debug(char *mesg, int terminate)
@@ -455,8 +475,13 @@ void Solve()
 
 	/* Implementation of the CG algorithm : */
 
+	timer_exchange_borders_start = MPI_Wtime();
 	Exchange_Borders(phi);
+	timer_exchange_borders_stop = MPI_Wtime();
+	timer_exchange_borders = timer_exchange_borders_stop - timer_exchange_borders_start;
+	timer_exchange_borders_total += timer_exchange_borders;
 
+	timer_computation_start = MPI_Wtime();
 	/* r = b-Ax */
 	for (i = 0; i < N_vert; i++)
 	{
@@ -464,17 +489,31 @@ void Solve()
 		for (j = 0; j < A[i].Ncol; j++)
 			r[i] -= A[i].val[j] * phi[A[i].col[j]];
 	}
+	timer_computation_stop = MPI_Wtime();
+	timer_computation = timer_computation_stop - timer_computation_start;
+	timer_computation_total += timer_computation;
 
 	r1 = 2 * precision_goal;
+
 	while ((count < max_iter) && (r1 > precision_goal))
 	{
+		timer_computation_start = MPI_Wtime();
 		/* r1 = r' * r */
 		sub = 0.0;
 		for (i = 0; i < N_vert; i++)
 			if (!(vert[i].type & TYPE_GHOST))
 				sub += r[i] * r[i];
-		MPI_Allreduce(&sub, &r1, 1, MPI_DOUBLE, MPI_SUM, grid_comm);
+		timer_computation_stop = MPI_Wtime();
+		timer_computation = timer_computation_stop - timer_computation_start;
+		timer_computation_total += timer_computation;
 
+		timer_global_comm_start = MPI_Wtime();
+		MPI_Allreduce(&sub, &r1, 1, MPI_DOUBLE, MPI_SUM, grid_comm);
+		timer_global_comm_stop = MPI_Wtime();
+		timer_global_comm = timer_global_comm_stop - timer_global_comm_start;
+		timer_global_comm_total += timer_global_comm;
+
+		timer_computation_start = MPI_Wtime();
 		if (count == 0)
 		{
 			/* p = r */
@@ -489,8 +528,17 @@ void Solve()
 			for (i = 0; i < N_vert; i++)
 				p[i] = r[i] + b * p[i];
 		}
-		Exchange_Borders(p);
+		timer_computation_stop = MPI_Wtime();
+		timer_computation = timer_computation_stop - timer_computation_start;
+		timer_computation_total += timer_computation;
 
+		timer_exchange_borders_start = MPI_Wtime();
+		Exchange_Borders(p);
+		timer_exchange_borders_stop = MPI_Wtime();
+		timer_exchange_borders = timer_exchange_borders_stop - timer_exchange_borders_start;
+		timer_exchange_borders_total += timer_exchange_borders;
+
+		timer_computation_start = MPI_Wtime();
 		/* q = A * p */
 		for (i = 0; i < N_vert; i++)
 		{
@@ -504,7 +552,17 @@ void Solve()
 		for (i = 0; i < N_vert; i++)
 			if (!(vert[i].type & TYPE_GHOST))
 				sub += p[i] * q[i];
+		timer_computation_stop = MPI_Wtime();
+		timer_computation = timer_computation_stop - timer_computation_start;
+		timer_computation_total += timer_computation;
+
+		timer_global_comm_start = MPI_Wtime();
 		MPI_Allreduce(&sub, &a, 1, MPI_DOUBLE, MPI_SUM, grid_comm);
+		timer_global_comm_stop = MPI_Wtime();
+		timer_global_comm = timer_global_comm_stop - timer_global_comm_start;
+		timer_global_comm_total += timer_global_comm;
+
+		timer_computation_start = MPI_Wtime();
 		a = r1 / a;
 
 		/* x = x + a*p */
@@ -516,15 +574,24 @@ void Solve()
 			r[i] -= a * q[i];
 
 		r2 = r1;
+		timer_computation_stop = MPI_Wtime();
+		timer_computation = timer_computation_stop - timer_computation_start;
+		timer_computation_total += timer_computation;
 
 		count++;
+
 	}
+
 	free(q);
 	free(p);
 	free(r);
 
 	if (proc_rank == 0)
 		printf("Number of iterations : %i\n", count);
+
+	printf("(%i) Time for doing computation: %.6f s\n", proc_rank, timer_computation_total);
+	printf("(%i) Time for exchanging borders: %.6f s\n", proc_rank, timer_exchange_borders_total);
+	printf("(%i) Time for global communication: %.6f s\n", proc_rank, timer_global_comm_total);
 }
 
 void Write_Grid()
