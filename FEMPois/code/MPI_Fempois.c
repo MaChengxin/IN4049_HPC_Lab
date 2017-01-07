@@ -122,22 +122,39 @@ void stop_timer()
 
 void print_timer()
 {
+	FILE *ftimer;
+	if ((ftimer = fopen("timer.dat", "a")) == NULL)
+		Debug("print_timer : fopen failed", 1);
+
 	if (timer_on)
 	{
 		stop_timer();
+		timer_idle = wtime - timer_computation_total - timer_exchange_borders_total - timer_global_comm_total;
 		printf("(%i) Elapsed Wtime: %14.6f s (%5.1f%% CPU)\n",
 		       proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
-		timer_idle = wtime - timer_computation_total - timer_exchange_borders_total - timer_global_comm_total;
-		printf("(%i) Idle time: %14.6f s \n", proc_rank, timer_idle);
+		printf("(%i) Time for doing computation: %.6f s\n", proc_rank, timer_computation_total);
+		printf("(%i) Time for exchanging borders: %.6f s\n", proc_rank, timer_exchange_borders_total);
+		printf("(%i) Time for global communication: %.6f s\n", proc_rank, timer_global_comm_total);
+		printf("(%i) Idle time: %.6f s \n", proc_rank, timer_idle);
+
+		fprintf(ftimer, "%i \t %.6f \t %.6f \t %.6f \t %.6f \t %.6f \n",
+		        proc_rank, wtime, timer_computation_total, timer_exchange_borders_total, timer_global_comm_total, timer_idle);
 		resume_timer();
 	}
 	else
 	{
+		timer_idle = wtime - timer_computation_total - timer_exchange_borders_total - timer_global_comm_total;
 		printf("(%i) Elapsed Wtime: %14.6f s (%5.1f%% CPU)\n",
 		       proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
-		timer_idle = wtime - timer_computation_total - timer_exchange_borders_total - timer_global_comm_total;
-		printf("(%i) Idle time: %14.6f s \n", proc_rank, timer_idle);
+		printf("(%i) Time for doing computation: %.6f s\n", proc_rank, timer_computation_total);
+		printf("(%i) Time for exchanging borders: %.6f s\n", proc_rank, timer_exchange_borders_total);
+		printf("(%i) Time for global communication: %.6f s\n", proc_rank, timer_global_comm_total);
+		printf("(%i) Idle time: %.6f s \n", proc_rank, timer_idle);
+
+		fprintf(ftimer, "%i \t %.6f \t %.6f \t %.6f \t %.6f \t %.6f \n",
+		        proc_rank, wtime, timer_computation_total, timer_exchange_borders_total, timer_global_comm_total, timer_idle);
 	}
+	fclose(ftimer);
 }
 
 void Debug(char *mesg, int terminate)
@@ -588,10 +605,6 @@ void Solve()
 
 	if (proc_rank == 0)
 		printf("Number of iterations : %i\n", count);
-
-	printf("(%i) Time for doing computation: %.6f s\n", proc_rank, timer_computation_total);
-	printf("(%i) Time for exchanging borders: %.6f s\n", proc_rank, timer_exchange_borders_total);
-	printf("(%i) Time for global communication: %.6f s\n", proc_rank, timer_global_comm_total);
 }
 
 void Write_Grid()

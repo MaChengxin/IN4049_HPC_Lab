@@ -23,4 +23,8 @@ fetch-poisson-error:
 
 fetch-poisson-border-info:
 	sshpass -p $(PASSWD) scp $(REMOTE_HOST):/home/$(USERNAME)/poisson/border*.dat poisson/recv-from-server
-.PHONY: conn send-hello-world send-poisson-par send-fempois fetch-poisson-profile fetch-poisson-error fetch-poisson-border-info
+
+fetch-fempois-timer:
+	sshpass -p $(PASSWD) scp $(REMOTE_HOST):/home/$(USERNAME)/FEMPois/timer.dat FEMPois/recv-from-server
+
+.PHONY: conn send-hello-world send-poisson-par send-fempois fetch-poisson-profile fetch-poisson-error fetch-poisson-border-info fetch-fempois-timer
