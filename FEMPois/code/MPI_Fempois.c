@@ -58,6 +58,10 @@ double timer_global_comm_total = 0.0;
 double timer_global_comm;
 double timer_global_comm_start, timer_global_comm_stop;
 
+double timer_solve_total = 0.0;
+double timer_solve;
+double timer_solve_start, timer_solve_stop;
+
 double timer_idle;
 
 /* local process related variables */
@@ -129,30 +133,18 @@ void print_timer()
 	if (timer_on)
 	{
 		stop_timer();
-		timer_idle = wtime - timer_computation_total - timer_exchange_borders_total - timer_global_comm_total;
-		printf("(%i) Elapsed Wtime: %14.6f s (%5.1f%% CPU)\n",
-		       proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
-		printf("(%i) Time for doing computation: %.6f s\n", proc_rank, timer_computation_total);
-		printf("(%i) Time for exchanging borders: %.6f s\n", proc_rank, timer_exchange_borders_total);
-		printf("(%i) Time for global communication: %.6f s\n", proc_rank, timer_global_comm_total);
-		printf("(%i) Idle time: %.6f s \n", proc_rank, timer_idle);
-
+		timer_idle = timer_solve_total - timer_computation_total - timer_exchange_borders_total - timer_global_comm_total;
+		printf("Printing time into file.\n");
 		fprintf(ftimer, "%i \t %.6f \t %.6f \t %.6f \t %.6f \t %.6f \n",
-		        proc_rank, wtime, timer_computation_total, timer_exchange_borders_total, timer_global_comm_total, timer_idle);
+		        proc_rank, timer_solve_total, timer_computation_total, timer_exchange_borders_total, timer_global_comm_total, timer_idle);
 		resume_timer();
 	}
 	else
 	{
-		timer_idle = wtime - timer_computation_total - timer_exchange_borders_total - timer_global_comm_total;
-		printf("(%i) Elapsed Wtime: %14.6f s (%5.1f%% CPU)\n",
-		       proc_rank, wtime, 100.0 * ticks * (1.0 / CLOCKS_PER_SEC) / wtime);
-		printf("(%i) Time for doing computation: %.6f s\n", proc_rank, timer_computation_total);
-		printf("(%i) Time for exchanging borders: %.6f s\n", proc_rank, timer_exchange_borders_total);
-		printf("(%i) Time for global communication: %.6f s\n", proc_rank, timer_global_comm_total);
-		printf("(%i) Idle time: %.6f s \n", proc_rank, timer_idle);
-
+		timer_idle = timer_solve_total - timer_computation_total - timer_exchange_borders_total - timer_global_comm_total;
+		printf("Printing time into file.\n");
 		fprintf(ftimer, "%i \t %.6f \t %.6f \t %.6f \t %.6f \t %.6f \n",
-		        proc_rank, wtime, timer_computation_total, timer_exchange_borders_total, timer_global_comm_total, timer_idle);
+		        proc_rank, timer_solve_total, timer_computation_total, timer_exchange_borders_total, timer_global_comm_total, timer_idle);
 	}
 	fclose(ftimer);
 }
@@ -492,6 +484,8 @@ void Solve()
 
 	/* Implementation of the CG algorithm : */
 
+	timer_solve_start = MPI_Wtime();
+
 	timer_exchange_borders_start = MPI_Wtime();
 	Exchange_Borders(phi);
 	timer_exchange_borders_stop = MPI_Wtime();
@@ -596,8 +590,11 @@ void Solve()
 		timer_computation_total += timer_computation;
 
 		count++;
-
 	}
+
+	timer_solve_stop = MPI_Wtime();
+	timer_solve = timer_solve_stop - timer_solve_start;
+	timer_solve_total += timer_solve;
 
 	free(q);
 	free(p);
