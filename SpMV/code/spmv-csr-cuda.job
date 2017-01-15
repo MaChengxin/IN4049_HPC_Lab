@@ -6,6 +6,6 @@
 #$
 . /etc/bashrc
 module load cuda55/toolkit
-file='spmv-csr-cuda-jin'
+file='spmv-csr-cuda'
 nvcc $file.cu -o $file
 ./$file
