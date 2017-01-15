@@ -1,5 +1,9 @@
 # Figures
 *.png
+!border_comm.png
+!partition_2x2.png
+!Process-Topology-2x2.png
+!Process-Topology-3x3.png
 
 # Result CSV
 result.csv
