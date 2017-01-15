@@ -1,0 +1,11 @@
+#!/bin/sh
+#$ -S /bin/sh
+#$ -l gpu=GTX480
+#$ -l h_rt=00:15:00
+#$ -cwd
+#$
+. /etc/bashrc
+module load cuda55/toolkit
+file='spmv-csr-cuda-jin'
+nvcc $file.cu -o $file
+./$file
