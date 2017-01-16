@@ -13,9 +13,6 @@
 #include <cuda.h>
 //#include <malloc.h>
 
-
-
-
 #define DEBUG 0
 
 /* global variables */
@@ -66,8 +63,6 @@ void Construction_Y_X();
 void Debug(char *mesg, int terminate);
 void Clean_Up();
 
-
-
 int main(void)
 {
 	int *row_ptr;
@@ -98,7 +93,6 @@ int main(void)
 		printf("input y(%i) = %f\n", ii, y_input[ii]);
 	}
 
-
 	cudaMalloc( (void**)&row_ptr, size_row_ptr );
 	cudaMalloc( (void**)&col_idx, size_col_idx );
 	cudaMalloc( (void**)&val, size_val );
@@ -111,8 +105,7 @@ int main(void)
 	cudaMemcpy( x, x_input, size_x, cudaMemcpyHostToDevice );
 	cudaMemcpy( y, y_input, size_y, cudaMemcpyHostToDevice );
 
-
-	unsigned int blocksize = 128; //
+	unsigned int blocksize = 128;
 	unsigned int nblocks = (row_num + blocksize - 1) / blocksize;
 	csrmul_kernel <<< nblocks, blocksize>>>(row_ptr, col_idx, val, row_num, x, y);
 
@@ -130,10 +123,8 @@ int main(void)
 		printf("output y(%i) = %f\n", ii, y_input[ii]);
 	}
 
-
 	Clean_Up(); //clean up the memory for the input parameters
 	return EXIT_SUCCESS;
-
 }
 
 void Read_Matrix_A()
@@ -177,7 +168,6 @@ void Read_Matrix_A()
 
 void Construction_Y_X()
 {
-
 	int i;
 
 	//allocate memory for the vector x_input and y_input
@@ -192,8 +182,8 @@ void Construction_Y_X()
 		y_input[i] = i + 1.0;
 		printf("x[%i] and y[] is %f %f\n", i, x_input[i], y_input[i]);
 	}
-
 }
+
 void Debug(char *mesg, int terminate)
 {
 	if (DEBUG || terminate)
@@ -201,6 +191,7 @@ void Debug(char *mesg, int terminate)
 	if (terminate)
 		exit(1);
 }
+
 void Clean_Up()
 {
 	Debug("Clean_Up", 0);
