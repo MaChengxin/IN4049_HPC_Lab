@@ -3,3 +3,10 @@
 
 # Result CSV
 result.csv
+
+# Visual Studio Files
+*.VC.opendb
+*.VC.db
+*.pdb
+.vs
+Debug
