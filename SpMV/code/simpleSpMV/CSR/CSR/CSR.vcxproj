@@ -19,8 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{82F3D295-DAB3-474B-A4E3-30FB8D2F90D4}</ProjectGuid>
-    <RootNamespace>spmv_csr_cuda_ref</RootNamespace>
+    <ProjectGuid>{C066890B-D0CB-4F50-9DE2-B4CDC2F47C75}</ProjectGuid>
+    <RootNamespace>CSR</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

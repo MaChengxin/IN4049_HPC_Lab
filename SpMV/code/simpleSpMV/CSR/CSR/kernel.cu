@@ -36,7 +36,7 @@ int main(void)
 	int num_rows_A = 4;
 	int num_rows_y = sizeof(y) / sizeof(y[0]);
 
-	for (int i = 0; i < num_rows_y ; i++)
+	for (int i = 0; i < num_rows_y; i++)
 		printf("input y(%i) = %f\n", i, y[i]);
 
 	int *A_ptr_dev;
@@ -76,7 +76,7 @@ int main(void)
 	cudaFree(x_dev);
 	cudaFree(y_dev);
 
-	for (int i = 0; i < num_rows_y ; i++)
+	for (int i = 0; i < num_rows_y; i++)
 		printf("output y(%i) = %f\n", i, y[i]);
 
 	return EXIT_SUCCESS;
