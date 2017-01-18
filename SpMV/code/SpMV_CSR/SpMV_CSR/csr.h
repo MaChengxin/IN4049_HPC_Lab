@@ -28,6 +28,3 @@ float *val_in;
 int *row_ptr;
 int *col_idx;
 float *val_out;
-
-int** col_Matrix;
-float** val_Matrix;

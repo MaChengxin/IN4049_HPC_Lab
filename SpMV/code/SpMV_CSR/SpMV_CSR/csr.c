@@ -62,19 +62,14 @@ void Read_Matrix()
 	}
 
 	fclose(f);
-	Debug("Reading matrix complete!", 0);
-
-	for (int x = 0; x < none_zero_num; x++)
-	{
-		printf("the %ith row, col, and val are: %i, %i, %f\n", x, row[x], col[x], val_in[x]);
-	}
+	Debug("Reading matrix complete.", 0);
 }
 
 void CSR_Transformation()
 {
 	Debug("Generating CSR format...", 0);
-	int* each_row_counter = (int*)malloc(row_size + 1);  // why +1?
-	int* Matrix_row_counter = (int*)malloc(row_size + 1);
+	int* each_row_counter = (int*)malloc((row_size + 1) * sizeof(int)); // why +1?
+	int* Matrix_row_counter = (int*)malloc((row_size + 1) * sizeof(int));
 	int i, j;
 	int CSR_counter = 0;
 
@@ -91,22 +86,13 @@ void CSR_Transformation()
 		each_row_counter[j] += 1;
 	}
 
-	/*
 	int** col_Matrix = (int **)malloc((row_size + 1) * sizeof(int *));
 	if (col_Matrix == NULL)
 		Debug("CSR_Transformation : malloc (col_1) failed", 1);
 
-	float** val_Matrix = (float **)malloc((row_size + 1) * sizeof(float*));
+	float** val_Matrix = (float **)malloc((row_size + 1) * sizeof(float *));
 	if (val_Matrix == NULL)
 		Debug("CSR_Transformation : malloc (val_1) failed", 1);
-		*/
-
-	if ((col_Matrix = (int **) malloc((row_size + 1) * sizeof(col_Matrix))) == NULL)
-		Debug("CSR_Transformation : malloc (col_1) failed", 1);
-	if ((val_Matrix = (float **) malloc((row_size + 1) * sizeof(val_Matrix))) == NULL)
-		Debug("CSR_Transformation : malloc (val_1) failed", 1);
-
-
 
 	for (i = 0; i < row_size + 1; i++)
 	{
@@ -132,7 +118,6 @@ void CSR_Transformation()
 		val_Matrix[j][Matrix_row_counter[j]] = val_in[i];
 		col_Matrix[j][Matrix_row_counter[j]] = col[i];
 	}
-	printf("!^_^! ^_^! ^_^! ^_^! ^_^!\n");
 
 	//allocate memory for the output data
 	if ((row_ptr = malloc((row_size + 1) * sizeof(*row_ptr))) == NULL)
@@ -166,24 +151,11 @@ void CSR_Transformation()
 		}
 	}
 
-	/*  printf("the row_ptr is \n");
-	  for(i = 0; i < row_size + 1; i++)
-	  {
-		printf("%i\n", row_ptr[i]);
-	  }
-	  printf("the val_out is \n");
-	  for(i = 0; i < none_zero_num; i++)
-	  {
-		printf("%f\n", val_out[i]);
-	  }
-	  printf("the col_idx is \n");
-	  for(i = 0; i < none_zero_num; i++)
-	  {
-		printf("%i\n", col_idx[i]);
-	  } */
+	free(each_row_counter);
+	free(Matrix_row_counter);
 	free(col_Matrix);
 	free(val_Matrix);
-	Debug("CSR format generated!", 0);
+	Debug("CSR format generated.", 0);
 }
 
 /*
@@ -210,7 +182,7 @@ void Write_Matrix()
 
 	fclose(f);
 
-	Debug("Matrix written!", 0);
+	Debug("Matrix written.", 0);
 }
 
 void Clean_Up()
@@ -221,7 +193,7 @@ void Clean_Up()
 	free(col);
 	free(val_in);
 
-	Debug("Cleaned up!", 0);
+	Debug("Cleaned up.", 0);
 }
 
 void Debug(char *mesg, int terminate)
