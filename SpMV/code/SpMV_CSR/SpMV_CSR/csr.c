@@ -91,6 +91,7 @@ void CSR_Transformation()
 		each_row_counter[j] += 1;
 	}
 
+	/*
 	int** col_Matrix = (int **)malloc((row_size + 1) * sizeof(int *));
 	if (col_Matrix == NULL)
 		Debug("CSR_Transformation : malloc (col_1) failed", 1);
@@ -98,6 +99,14 @@ void CSR_Transformation()
 	float** val_Matrix = (float **)malloc((row_size + 1) * sizeof(float*));
 	if (val_Matrix == NULL)
 		Debug("CSR_Transformation : malloc (val_1) failed", 1);
+		*/
+
+	if ((col_Matrix = (int **) malloc((row_size + 1) * sizeof(col_Matrix))) == NULL)
+		Debug("CSR_Transformation : malloc (col_1) failed", 1);
+	if ((val_Matrix = (float **) malloc((row_size + 1) * sizeof(val_Matrix))) == NULL)
+		Debug("CSR_Transformation : malloc (val_1) failed", 1);
+
+
 
 	for (i = 0; i < row_size + 1; i++)
 	{
