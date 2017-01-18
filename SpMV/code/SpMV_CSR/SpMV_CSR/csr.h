@@ -15,7 +15,7 @@ void Write_Matrix();
 void Clean_Up();
 void Debug(char *mesg, int terminate);
 
-// input variable
+/*input*/
 int row_size;
 int col_size;
 int none_zero_num;
@@ -24,7 +24,7 @@ int *row;
 int *col;
 float *val_in;
 
-//output
+/*output*/
 int *row_ptr;
 int *col_idx;
 float *val_out;

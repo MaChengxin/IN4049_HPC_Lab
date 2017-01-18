@@ -21,7 +21,7 @@ It also stores the size of the matrix and the number of non-zero elements.
 */
 void Read_Matrix()
 {
-	Debug("Reading matrix...", 0);
+	Debug("Reading matrix info...", 0);
 
 	int s;
 	FILE *f;
@@ -42,7 +42,6 @@ void Read_Matrix()
 	if ((val_in = malloc(none_zero_num * sizeof(*val_in))) == NULL)
 		Debug("Read_Matrix : malloc(val_in) failed", 1);
 
-	/* set all values to '0' */
 	for (int i = 0; i < none_zero_num; i++)
 	{
 		row[i] = 0;
@@ -62,18 +61,17 @@ void Read_Matrix()
 	}
 
 	fclose(f);
-	Debug("Reading matrix complete.", 0);
+	Debug("Matrix info read.", 0);
 }
 
 void CSR_Transformation()
 {
-	Debug("Generating CSR format...", 0);
-	int* each_row_counter = (int*)malloc((row_size + 1) * sizeof(int)); // why +1?
+	Debug("Generating matrix representation with CSR format...", 0);
+	int* each_row_counter = (int*)malloc((row_size + 1) * sizeof(int));
 	int* Matrix_row_counter = (int*)malloc((row_size + 1) * sizeof(int));
 	int i, j;
 	int CSR_counter = 0;
 
-	//set all the row counter = 0;
 	for (i = 0; i < row_size + 1; i++)
 	{
 		each_row_counter[i] = 0;
@@ -96,13 +94,13 @@ void CSR_Transformation()
 
 	for (i = 0; i < row_size + 1; i++)
 	{
-		if ((col_Matrix[i] = malloc((each_row_counter[i]) * sizeof(*col_Matrix))) == NULL)
+		if ((col_Matrix[i] = malloc((each_row_counter[i]) * sizeof(int))) == NULL)
 			Debug("CSR_Transformation : malloc (col_2) failed", 1);
-		if ((val_Matrix[i] = malloc((each_row_counter[i]) * sizeof(*val_Matrix))) == NULL)
+		if ((val_Matrix[i] = malloc((each_row_counter[i]) * sizeof(float))) == NULL)
 			Debug("CSR_Transformation : malloc (val_2) failed", 1);
 	}
 
-	for (i = 0; i < row_size; i++)
+	for (i = 0; i < row_size + 1; i++)
 	{
 		for (j = 1; j < each_row_counter[i]; j++)
 		{
@@ -119,7 +117,6 @@ void CSR_Transformation()
 		col_Matrix[j][Matrix_row_counter[j]] = col[i];
 	}
 
-	//allocate memory for the output data
 	if ((row_ptr = malloc((row_size + 1) * sizeof(*row_ptr))) == NULL)
 		Debug("Read_Matrix : malloc(row_ptr) failed", 1);
 	if ((col_idx = malloc(none_zero_num * sizeof(*col_idx))) == NULL)
@@ -155,7 +152,7 @@ void CSR_Transformation()
 	free(Matrix_row_counter);
 	free(col_Matrix);
 	free(val_Matrix);
-	Debug("CSR format generated.", 0);
+	Debug("Matrix representation with CSR format generated.", 0);
 }
 
 /*
@@ -163,14 +160,14 @@ Write_Matrix() generates the file for the CUDA application.
 */
 void Write_Matrix()
 {
-	Debug("Writing matrix...", 0);
+	Debug("Writing transformed matrix info...", 0);
 
 	FILE *f;
 
 	if ((f = fopen("csr_matrix.dat", "w")) == NULL)
-		Debug("Write_Grid : fopen failed", 1);
+		Debug("Write_Matrix: fopen failed", 1);
 
-	fprintf(f, "csr_matrix_formate(row*column, none_zero_num): %i*%i, %i\n", row_size, col_size, none_zero_num);
+	fprintf(f, "(row*column, none_zero_num): (%i*%i, %i)\n", row_size, col_size, none_zero_num);
 
 	fprintf(f, "row_ptr:\n");
 	for (int i = 0; i < row_size + 1; i++)
@@ -178,11 +175,11 @@ void Write_Matrix()
 
 	fprintf(f, "col_idx and val:\n");
 	for (int i = 0; i < none_zero_num; i++)
-		fprintf(f, "%i %f\n", col_idx[i] - 1, val_out[i]);
+		fprintf(f, "%i\t %f\n", col_idx[i] - 1, val_out[i]);
 
 	fclose(f);
 
-	Debug("Matrix written.", 0);
+	Debug("Transformed matrix info written.", 0);
 }
 
 void Clean_Up()
