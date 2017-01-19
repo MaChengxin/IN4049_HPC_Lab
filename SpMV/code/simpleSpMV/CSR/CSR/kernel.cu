@@ -10,10 +10,10 @@ Modified by C. Ma
 #include <device_launch_parameters.h>
 #include <cuda_runtime.h>
 
-__device__ float multiply_row(int rows_size, int *idx, float *val, float *x)
+__device__ float multiply_row(int row_size, int *idx, float *val, float *x)
 {
 	float sum = 0.0;
-	for (int i = 0; i < rows_size; ++i)
+	for (int i = 0; i < row_size; ++i)
 		sum += val[i] * x[idx[i]];
 	return sum;
 }
