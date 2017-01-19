@@ -182,7 +182,9 @@ void tile_dexcription()
   if ((tile_empty_offset = malloc((p - 1) * sizeof(*tile_empty_offset))) == NULL)  
     Debug("CSR5_Transformation_tile_empty_offset : malloc (tile_empty_offset) failed", 1);  
   
-  int empty_tile_true_counter[p - 1]; //calculate the number of "True" in each tile with empty row!!!
+  // int empty_tile_true_counter[p - 1];
+  int* empty_tile_true_counter = (int*)malloc((p - 1) * sizeof(int));  //calculate the number of "True" in each tile with empty row!!!
+
   for (i = 0; i< (p - 1); i++)
   { 
     empty_tile_true_counter[i] = 0;
@@ -470,8 +472,8 @@ void Read_Matrix()
 
 void CSR_Transformation()
 { 
-  int each_row_counter[row_num+1];
-  int Matrix_row_counter[row_num+1];
+  int* each_row_counter = (int*)malloc((row_num + 1) * sizeof(int));
+  int* Matrix_row_counter = (int*)malloc((row_num + 1) * sizeof(int));
   int counter = 0;
   int i, j;
   int each_val_col;
