@@ -27,6 +27,9 @@
   <ItemGroup>
     <ClCompile Include="csr5-jin.c" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="csr5.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4B0D69F8-C7DA-4284-AD2F-1ECBBBAF5724}</ProjectGuid>
     <RootNamespace>SpMV_CSR5</RootNamespace>
