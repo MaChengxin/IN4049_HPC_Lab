@@ -1,188 +1,131 @@
-// parallel SPMV CSR
-// compute y = y + Ax
-// Assume all the input element of vector y[i] and x[i] are "i", and length(y) = length(x) = col[A]
-//
-// G. Fu, Dec 31, 2015
-//
-// Modified by Jianbing Jin
+/*
+Parallel SPMV CSR
+Compute y = y + Ax
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
-#include <cuda.h>
-#include <device_launch_parameters.h>
-#include <cuda_runtime.h>
+G. Fu, Dec 31, 2015
+Modified by Jianbing Jin
+*/
 
-#define DEBUG 0
-
-/* global variables */
-int row_num;
-int col_num;
-int none_zero_num;
-
-int *row_ptr_input;
-int *col_idx_input;
-float *val_input;
-float *x_input;
-float *y_input;
-
-//the input parameters of matrix A, vector x and vector y//
-
-
-
-
-
-
-// compute multiply_row   used in csrmul_kernel
-__device__ float multiply_row(int rowsize,
-                              int *col_idx,      // column indices for row
-                              float *val,    // non-zero entries for row
-                              float *x)     // the RHS vector
-{
-	float sum = 0;
-	for (int column = 0; column < rowsize; ++column)
-		sum += val[column] * x[col_idx[column]];
-	return sum;
-}
-
-// compute CSR format, kernel for Matrix-vector multiplication
-__global__ void csrmul_kernel(int *row_ptr, int *col_idx, float *val, int num_rows_A,
-                              float *x, float *y)
-{
-	int row = blockIdx.x * blockDim.x + threadIdx.x ;  //parallel by the row number
-	if (row < num_rows_A)
-	{
-		int row_begin = row_ptr[row];
-		int row_end = row_ptr[row + 1];
-		y[row] = y[row] + multiply_row(row_end - row_begin, col_idx + row_begin, val + row_begin, x);
-	}
-}
-
-void Read_Matrix_A();
-void Construction_Y_X();
-void Debug(char *mesg, int terminate);
-void Clean_Up();
+#include "spmv-csr-cuda.h"
 
 int main(void)
 {
-	int *row_ptr;
-	int *col_idx;
-	float *val;
-	float *x;
-	float *y;
-
-
-	printf("hehe\n");
-
 	Read_Matrix_A();
 
-	Construction_Y_X();
+	Construct_Y_X();
 
-	int size_row_ptr = (row_num + 1) * sizeof(*row_ptr);
-	int size_col_idx = none_zero_num * sizeof(*col_idx);
-	float size_val = none_zero_num * sizeof(*val);
-	float size_x = col_num * sizeof(float);
-	float size_y = col_num * sizeof(float);
+	int *row_ptr_dev;
+	int *col_idx_dev;
+	float *val_dev;
+	float *x_dev;
+	float *y_dev;
 
-	printf("1\n");
-	printf("size_row_ptr, size_col_idx, size_val, size_x, size_y are %i %i %f %f %f\n", size_row_ptr, size_col_idx, size_val, size_x, size_y);
+	int size_row_ptr = (num_row_in_mat + 1) * sizeof(int);
+	int size_col_idx = num_none_zero_in_mat * sizeof(int);
+	float size_val = num_none_zero_in_mat * sizeof(float);
+	float size_x = num_col_in_mat * sizeof(float);
+	float size_y = num_col_in_mat * sizeof(float);
 
+	for (int i = 0; i < num_col_in_mat; i++)
+		printf("input y[%i] = %f\n", i, y[i]);
 
-	for ( int ii = 0 ; ii <= col_num - 1; ii++ )
-	{
-		printf("input y(%i) = %f\n", ii, y_input[ii]);
-	}
+	cudaMalloc((void**)&row_ptr_dev, size_row_ptr);
+	cudaMalloc((void**)&col_idx_dev, size_col_idx);
+	cudaMalloc((void**)&val_dev, size_val);
+	cudaMalloc((void**)&x_dev, size_x);
+	cudaMalloc((void**)&y_dev, size_y);
 
-	cudaMalloc( (void**)&row_ptr, size_row_ptr );
-	cudaMalloc( (void**)&col_idx, size_col_idx );
-	cudaMalloc( (void**)&val, size_val );
-	cudaMalloc( (void**)&x, size_x );
-	cudaMalloc( (void**)&y, size_y );
+	cudaMemcpy(row_ptr_dev, row_ptr, size_row_ptr, cudaMemcpyHostToDevice);
+	cudaMemcpy(col_idx_dev, col_idx, size_col_idx, cudaMemcpyHostToDevice);
+	cudaMemcpy(val_dev, val, size_val, cudaMemcpyHostToDevice);
+	cudaMemcpy(x_dev, x, size_x, cudaMemcpyHostToDevice);
+	cudaMemcpy(y_dev, y, size_y, cudaMemcpyHostToDevice);
 
-	cudaMemcpy( row_ptr, row_ptr_input, size_row_ptr, cudaMemcpyHostToDevice );
-	cudaMemcpy( col_idx, col_idx_input, size_col_idx, cudaMemcpyHostToDevice );
-	cudaMemcpy( val, val_input, size_val, cudaMemcpyHostToDevice );
-	cudaMemcpy( x, x_input, size_x, cudaMemcpyHostToDevice );
-	cudaMemcpy( y, y_input, size_y, cudaMemcpyHostToDevice );
+	unsigned int block_size = 128;
+	unsigned int num_blocks = (num_row_in_mat + block_size - 1) / block_size;
+	Debug("Calculating on CUDA...", 0);
+	csrmul_kernel << < num_blocks, block_size >> > (row_ptr_dev, col_idx_dev, val_dev, num_row_in_mat, x_dev, y_dev);
+	Debug("Calculation finished.", 0);
 
-	unsigned int blocksize = 128;
-	unsigned int nblocks = (row_num + blocksize - 1) / blocksize;
-	csrmul_kernel <<< nblocks, blocksize>>>(row_ptr, col_idx, val, row_num, x, y);
+	cudaMemcpy(y, y_dev, size_y, cudaMemcpyDeviceToHost);
 
-	cudaMemcpy(y_input, y, size_y, cudaMemcpyDeviceToHost);
+	cudaFree(row_ptr_dev);
+	cudaFree(col_idx_dev);
+	cudaFree(val_dev);
+	cudaFree(x_dev);
+	cudaFree(y_dev);
 
-	// cleanup memory
-	cudaFree(y);
-	cudaFree(x);
-	cudaFree(val);
-	cudaFree(col_idx);
-	cudaFree(row_ptr);
+	for (int i = 0; i < num_col_in_mat; i++)
+		printf("output y[%i] = %f\n", i, y[i]);
 
-	for ( int ii = 0 ; ii <= col_num - 1; ii++ )
-	{
-		printf("output y(%i) = %f\n", ii, y_input[ii]);
-	}
+	free(row_ptr);
+	free(col_idx);
+	free(val);
+	free(x);
+	free(y);
 
-	Clean_Up(); //clean up the memory for the input parameters
 	return EXIT_SUCCESS;
 }
 
 void Read_Matrix_A()
 {
+	Debug("Reading Matrix A...", 0);
+
 	FILE *f;
-	int i;
-
-	Debug("Read_Matrix_A", 0);
-
 	f = fopen("csr_matrix.dat", "r");
 	if (f == NULL)
 		Debug("Error opening csr_matrix.dat", 1);
 
-	fscanf(f, "csr_matrix_formate(row*column, none_zero_num): %i*%i, %i\n", &row_num, &col_num, &none_zero_num);
-	printf("the inputfile's fisrt row is %i %i %i\n", row_num, col_num, none_zero_num);
+	fscanf(f, "(row*column, none_zero_num): (%i*%i, %i)\n", &num_row_in_mat, &num_col_in_mat, &num_none_zero_in_mat);
+	printf("The input file's fisrt row is: %i %i %i\n", num_row_in_mat, num_col_in_mat, num_none_zero_in_mat);
 
-	//row_ptr_input = (int *)malloc(sizeof(int));
-	//Debug("Read_Matrix_A : malloc(row_ptr_input) failed", 1);
-
-	row_ptr_input = (int *)malloc((row_num + 1) * sizeof(int));
-	// Debug("Read_Matrix_A : malloc(row_ptr) failed", 1);
-	col_idx_input = (int *)malloc(none_zero_num * sizeof(int));
-	// Debug("Read_Matrix_A : malloc(col_idx) failed", 1);
-	val_input = (float *)malloc(none_zero_num * sizeof(float));
-	//Debug("Read_Matrix_A : malloc(val) failed", 1);
+	row_ptr = (int *)malloc((num_row_in_mat + 1) * sizeof(int));
+	if (row_ptr == NULL)
+		Debug("Read_Matrix_A : malloc(row_ptr) failed", 1);
+	col_idx = (int *)malloc(num_none_zero_in_mat * sizeof(int));
+	if (col_idx == NULL)
+		Debug("Read_Matrix_A : malloc(col_idx) failed", 1);
+	val = (float *)malloc(num_none_zero_in_mat * sizeof(float));
+	if (val == NULL)
+		Debug("Read_Matrix_A : malloc(val) failed", 1);
 
 	fscanf(f, "row_ptr:\n");
-	for (i = 0; i < row_num + 1; i++)
+	for (int i = 0; i < num_row_in_mat + 1; i++)
 	{
-		fscanf(f, "%i\n", &row_ptr_input[i]);
-		printf("row_ptr_input[%i] is %i\n", i, row_ptr_input[i]);
+		fscanf(f, "%i\n", &row_ptr[i]);
+		printf("row_ptr[%i]: %i\n", i, row_ptr[i]);
 	}
 
 	fscanf(f, "col_idx and val:\n");
-	for (i = 0; i < none_zero_num; i++)
+	for (int i = 0; i < num_none_zero_in_mat; i++)
 	{
-		fscanf(f, "%i %f", &col_idx_input[i], &val_input[i]);
-		printf("col_idx and val_input[%i] is %i %f\n", i, col_idx_input[i], val_input[i]);
+		fscanf(f, "%i %f", &col_idx[i], &val[i]);
+		printf("col_idx[%i] and val[%i]: %i and %f\n", i, i, col_idx[i], val[i]);
 	}
+
+	Debug("Matrix A read.", 0);
 }
 
-void Construction_Y_X()
+void Construct_Y_X()
 {
-	int i;
+	Debug("Constructing y and x...", 0);
 
-	//allocate memory for the vector x_input and y_input
-	y_input = (float *)malloc(none_zero_num * sizeof(float));
-	// Debug("Construction_Y_X : malloc(y_input) failed", 1);
-	x_input = (float *)malloc(none_zero_num * sizeof(float));
-	// Debug("Construction_Y_X : malloc(row_ptr) failed", 1);
+	y = (float *)malloc(num_col_in_mat * sizeof(float));
+	if (y == NULL)
+		Debug("Construct_Y_X : malloc(y) failed", 1);
 
-	for (i = 0; i < col_num; i++)
+	x = (float *)malloc(num_col_in_mat * sizeof(float));
+	if (x == NULL)
+		Debug("Construct_Y_X : malloc(x) failed", 1);
+
+	for (int i = 0; i < num_col_in_mat; i++)
 	{
-		x_input[i] = i + 1.0;
-		y_input[i] = i + 1.0;
-		printf("x[%i] and y[] is %f %f\n", i, x_input[i], y_input[i]);
+		x[i] = i + 1.0;
+		y[i] = i + 1.0;
+		printf("x[%i] and y[%i]: %f and %f\n", i, i, x[i], y[i]);
 	}
+
+	Debug("y and x constructed.", 0);
 }
 
 void Debug(char *mesg, int terminate)
@@ -193,13 +136,17 @@ void Debug(char *mesg, int terminate)
 		exit(1);
 }
 
-void Clean_Up()
+__device__ float multiply_row(int row_size, int *idx, float *val, float *x)
 {
-	Debug("Clean_Up", 0);
+	float sum = 0.0;
+	for (int i = 0; i < row_size; ++i)
+		sum += val[i] * x[idx[i]];
+	return sum;
+}
 
-	free(row_ptr_input);
-	free(col_idx_input);
-	free(val_input);
-	free(x_input);
-	free(y_input);
+__global__ void csrmul_kernel(int *A_ptr, int *A_idx, float *A_val, int num_rows_A, float *x, float *y)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < num_rows_A)
+		y[i] = y[i] + multiply_row(A_ptr[i + 1] - A_ptr[i], A_idx + A_ptr[i], A_val + A_ptr[i], x);
 }

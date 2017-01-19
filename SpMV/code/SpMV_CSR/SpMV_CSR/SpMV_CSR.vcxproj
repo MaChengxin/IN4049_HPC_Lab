@@ -157,10 +157,11 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <None Include="rdb450.dat" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="csr.c" />
+    <ClInclude Include="csr.h" />
+    <ClInclude Include="spmv-csr-cuda.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="csr.h" />
+    <CudaCompile Include="spmv-csr-cuda.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
