@@ -8,5 +8,6 @@ result.csv
 *.VC.opendb
 *.VC.db
 *.pdb
+*.vcxproj.user
 .vs
 Debug
