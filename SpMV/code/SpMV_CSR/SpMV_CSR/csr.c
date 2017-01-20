@@ -29,9 +29,9 @@ void Read_Matrix()
 	int col_idx;
 	float val;
 
-	f = fopen("full-matrix-input2.dat", "r");
+	f = fopen("input/test_mat.dat", "r");
 	if (f == NULL)
-		Debug("Error opening full-matrix-input2.dat", 1);
+		Debug("Error opening test_mat.dat", 1);
 
 	fscanf(f, "%i %i %i\n", &row_size, &col_size, &none_zero_num);
 
