@@ -31,9 +31,9 @@ void Read_Matrix()
   float source_val;
   Debug("Read_Matrix", 0);
   
-  f = fopen("full-matrix-input2.dat", "r");
+  f = fopen("input/test_mat.dat", "r");
   if (f == NULL)
-    Debug("Error opening full-matrix-input.dat", 1);
+    Debug("Error opening test_mat.dat", 1);
   
   // read the row_num column_num and none_zero_num of the input matrix
   fscanf(f, "%i %i %i\n", &row_num, &col_num, &none_zero_num);
