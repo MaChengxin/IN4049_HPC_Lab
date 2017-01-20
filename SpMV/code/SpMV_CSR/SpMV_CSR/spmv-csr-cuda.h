@@ -8,6 +8,7 @@ Modified by Jianbing Jin
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <cuda.h>
 #include <device_launch_parameters.h>
 #include <cuda_runtime.h>
@@ -25,7 +26,7 @@ float *val;
 float *x;
 float *y;
 
-void Read_Matrix_A();
+void Read_Matrix_A_CSR_info();
 void Construct_Y_X();
 void Debug(char *mesg, int terminate);
 __device__ float multiply_row(int rows_size, int *idx, float *val, float *x);

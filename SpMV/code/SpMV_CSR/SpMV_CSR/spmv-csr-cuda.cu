@@ -10,7 +10,7 @@ Modified by Jianbing Jin
 
 int main(void)
 {
-	Read_Matrix_A();
+	Read_Matrix_A_CSR_info();
 
 	Construct_Y_X();
 
@@ -26,9 +26,6 @@ int main(void)
 	float size_x = num_col_in_mat * sizeof(float);
 	float size_y = num_col_in_mat * sizeof(float);
 
-	for (int i = 0; i < num_col_in_mat; i++)
-		printf("input y[%i] = %f\n", i, y[i]);
-
 	cudaMalloc((void**)&row_ptr_dev, size_row_ptr);
 	cudaMalloc((void**)&col_idx_dev, size_col_idx);
 	cudaMalloc((void**)&val_dev, size_val);
@@ -42,21 +39,21 @@ int main(void)
 	cudaMemcpy(y_dev, y, size_y, cudaMemcpyHostToDevice);
 
 	unsigned int block_size = 128;
-	unsigned int num_blocks = (num_row_in_mat + block_size - 1) / block_size;
+	unsigned int num_blocks = ceil((double)num_row_in_mat / block_size);
 	Debug("Calculating on CUDA...", 0);
 	csrmul_kernel << < num_blocks, block_size >> > (row_ptr_dev, col_idx_dev, val_dev, num_row_in_mat, x_dev, y_dev);
 	Debug("Calculation finished.", 0);
 
 	cudaMemcpy(y, y_dev, size_y, cudaMemcpyDeviceToHost);
 
+	for (int i = 0; i < num_col_in_mat; i++)
+		printf("output y[%i] = %f\n", i, y[i]);
+
 	cudaFree(row_ptr_dev);
 	cudaFree(col_idx_dev);
 	cudaFree(val_dev);
 	cudaFree(x_dev);
 	cudaFree(y_dev);
-
-	for (int i = 0; i < num_col_in_mat; i++)
-		printf("output y[%i] = %f\n", i, y[i]);
 
 	free(row_ptr);
 	free(col_idx);
@@ -67,7 +64,7 @@ int main(void)
 	return EXIT_SUCCESS;
 }
 
-void Read_Matrix_A()
+void Read_Matrix_A_CSR_info()
 {
 	Debug("Reading Matrix A...", 0);
 
@@ -103,7 +100,7 @@ void Read_Matrix_A()
 		printf("col_idx[%i] and val[%i]: %i and %f\n", i, i, col_idx[i], val[i]);
 	}
 
-	Debug("Matrix A read.", 0);
+	Debug("Matrix A (CSR format) read.", 0);
 }
 
 void Construct_Y_X()
@@ -122,10 +119,11 @@ void Construct_Y_X()
 	{
 		x[i] = i + 1.0;
 		y[i] = i + 1.0;
-		printf("x[%i] and y[%i]: %f and %f\n", i, i, x[i], y[i]);
+		printf("x[%i] and input y[%i]: %f and %f\n", i, i, x[i], y[i]);
 	}
 
 	Debug("y and x constructed.", 0);
+
 }
 
 void Debug(char *mesg, int terminate)
@@ -144,9 +142,9 @@ __device__ float multiply_row(int row_size, int *idx, float *val, float *x)
 	return sum;
 }
 
-__global__ void csrmul_kernel(int *A_ptr, int *A_idx, float *A_val, int num_rows_A, float *x, float *y)
+__global__ void csrmul_kernel(int *row_ptr, int *col_idx, float *val, int num_row_in_mat, float *x, float *y)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	if (i < num_rows_A)
-		y[i] = y[i] + multiply_row(A_ptr[i + 1] - A_ptr[i], A_idx + A_ptr[i], A_val + A_ptr[i], x);
+	if (i < num_row_in_mat)
+		y[i] = y[i] + multiply_row(row_ptr[i + 1] - row_ptr[i], col_idx + row_ptr[i], val + row_ptr[i], x);
 }
