@@ -11,11 +11,11 @@ int main(int argc, char **argv)
 
 	CSR_Transformation();
 
-	Sigma_computing();
+	Compute_Sigma();
 
 	CSR5_Transformation();
 
-	Write_Grid();
+	Write_Matrix_Info();
 
 	Clean_Up();
 
@@ -164,7 +164,7 @@ void CSR_Transformation()
 	}
 }
 
-void Sigma_computing()
+void Compute_Sigma()
 {
 	int r = 4;
 	int s = 32;
@@ -174,35 +174,35 @@ void Sigma_computing()
 
 	division_result = (int)(none_zero_num / row_num);
 	if (division_result < r)
-		Sigma = r;
+		sigma = r;
 	else
 		if (division_result <= s)
-			Sigma = division_result;
+			sigma = division_result;
 		else
 			if (division_result <= t)
-				Sigma = s;
+				sigma = s;
 			else
-				Sigma = u;
+				sigma = u;
 
-	printf("Sigma is %i\n", division_result);
+	printf("sigma is %i\n", division_result);
 }
 
 void CSR5_Transformation()
 {
-	tile_ptr_computing();
-	tile_val_computing();
-	tile_dexcription();
+	Compute_Tile_Ptr();
+	Compute_Tile_Val();
+	Compute_Tile_Desc();
 }
 
-void Write_Grid()
+void Write_Matrix_Info()
 {
 	int x, y;
 	FILE *f;
 
 	if ((f = fopen("csr_matrix.dat", "w")) == NULL)
-		Debug("Write_Grid : fopen failed", 1);
+		Debug("Write_Matrix_Info : fopen failed", 1);
 
-	Debug("Write_Grid", 0);
+	Debug("Write_Matrix_Info", 0);
 	fprintf(f, "csr_matrix_formate(row*column, none_zero_num): %i*%i, %i\n", row_num, col_num, none_zero_num);
 	fprintf(f, "row_ptr:\n");
 	for (x = 0; x < row_num + 1; x++)
@@ -233,7 +233,7 @@ void Clean_Up()
 	free(row_ptr);
 }
 
-void tile_dexcription()
+void Compute_Tile_Desc()
 {
 	int i, j, m;
 	int count;
@@ -242,31 +242,29 @@ void tile_dexcription()
 		Debug("CSR5_Transformation_tile_bit_flag : malloc (tile_bit_flag) failed", 1);
 	for (i = 0; i < (p - 1); i++)
 	{
-		if ((tile_bit_flag[i] = malloc((Sigma) * sizeof(**tile_bit_flag))) == NULL)  // every tile has Sigma row
+		if ((tile_bit_flag[i] = malloc((sigma) * sizeof(**tile_bit_flag))) == NULL)  // every tile has sigma row
 			Debug("CSR5_Transformation_tile_bit_flag: malloc (tile_bit_flag) failed", 1);
-		for (j = 0; j < Sigma; j++)
+		for (j = 0; j < sigma; j++)
 		{
 			if ((tile_bit_flag[i][j] = malloc((w) * sizeof(***tile_bit_flag))) == NULL) // every row in the  tile has w column
 				Debug("CSR5_Transformation_tile_bit_flag: malloc (tile_bit_flag) failed", 1);
 		}
 	}
 
-
-
-	for (count = 0; (count < (p - 1) * Sigma * w); count++)
+	for (count = 0; (count < (p - 1) * sigma * w); count++)
 	{
 		// computer the corresponding index i j m for each count;
-		i = count / (Sigma * w);  // tile index
-		j = (count % (Sigma * w)) / Sigma; //
-		m = (count % (Sigma * w)) % Sigma; //
+		i = count / (sigma * w);  // tile index
+		j = (count % (sigma * w)) / sigma; //
+		m = (count % (sigma * w)) % sigma; //
 		tile_bit_flag[i][m][j] = False;  //as the tile 
 	}
 
 	for (count = 0; count < row_num; count++)
 	{
-		i = row_ptr[count] / (Sigma * w);
-		j = (row_ptr[count] % (Sigma * w)) / Sigma;
-		m = (row_ptr[count] % (Sigma * w)) % Sigma;
+		i = row_ptr[count] / (sigma * w);
+		j = (row_ptr[count] % (sigma * w)) / sigma;
+		m = (row_ptr[count] % (sigma * w)) % sigma;
 
 		tile_bit_flag[i][m][j] = True;
 	}
@@ -278,7 +276,7 @@ void tile_dexcription()
 
 	for (i = 0; i < (p - 1); i++)
 	{
-		for (j = 0; j < Sigma; j++)
+		for (j = 0; j < sigma; j++)
 		{
 			for (m = 0; m < w; m++)
 			{
@@ -305,7 +303,7 @@ void tile_dexcription()
 		for (m = 0; m < w; m++)
 		{
 			tile_y_offset[i][m] = bais;
-			for (j = 0; j < Sigma; j++)
+			for (j = 0; j < sigma; j++)
 			{
 				bais = bais + tile_bit_flag[i][j][m];
 			}
@@ -316,7 +314,7 @@ void tile_dexcription()
 		for (m = 0; m < w; m++)
 		{
 			int seg = 0;
-			for (j = 0; j < Sigma; j++)
+			for (j = 0; j < sigma; j++)
 			{
 				seg = max(tile_bit_flag[i][j][m], seg);
 			}
@@ -347,7 +345,7 @@ void tile_dexcription()
 		if (tile_ptr[i] <= 0)
 			for (m = 0; m < w; m++)
 			{
-				for (j = 0; j < Sigma; j++)
+				for (j = 0; j < sigma; j++)
 				{
 					if (tile_bit_flag[i][j][m] == True)
 						empty_tile_true_counter[i]++;
@@ -370,12 +368,11 @@ void tile_dexcription()
 		if (tile_ptr[i] <= 0)
 			for (m = 0; m < w; m++)
 			{
-				for (j = 0; j < Sigma; j++)
+				for (j = 0; j < sigma; j++)
 				{
 					if (tile_bit_flag[i][j][m] == True)
 					{
-
-						tid = i * Sigma * w + m * w + j;
+						tid = i * sigma * w + m * w + j;
 						for (row_ptr_counter = 0; row_ptr_counter < row_num; row_ptr_counter++)
 						{
 							if ((tid >= row_ptr[row_ptr_counter]) && (tid <= row_ptr[row_ptr_counter + 1]))
@@ -401,12 +398,9 @@ void tile_dexcription()
 			}
 		}
 	}
-
-
-
 }
 
-void tile_val_computing()
+void Compute_Tile_Val()
 {
 	int i, j, m;
 	int count;
@@ -418,12 +412,12 @@ void tile_val_computing()
 
 	for (i = 0; i < p - 1; i++)
 	{
-		if ((tile_val[i] = malloc((Sigma) * sizeof(**tile_val))) == NULL)
+		if ((tile_val[i] = malloc((sigma) * sizeof(**tile_val))) == NULL)
 			Debug("CSR5_Transformation_tile_val: malloc (tile_val[i]) failed", 1);
-		if ((tile_col_idx[i] = malloc((Sigma) * sizeof(**tile_col_idx))) == NULL)
+		if ((tile_col_idx[i] = malloc((sigma) * sizeof(**tile_col_idx))) == NULL)
 			Debug("CSR5_Transformation_tile_col_idx: malloc (tile_col_idx[i]) failed", 1);
 
-		for (j = 0; j < Sigma; j++)
+		for (j = 0; j < sigma; j++)
 		{
 			if ((tile_val[i][j] = malloc((w) * sizeof(***tile_val))) == NULL)
 				Debug("CSR5_Transformation_tile_val : malloc (tile_val[i][j]) failed", 1);
@@ -432,21 +426,20 @@ void tile_val_computing()
 		}
 	}
 
-	for (count = 0; (count < (p - 1) * Sigma * w); count++)
+	for (count = 0; (count < (p - 1) * sigma * w); count++)
 	{
 		// computer the corresponding index i j m for each count;
-		i = count / (Sigma * w);
-		j = (count % (Sigma * w)) / Sigma;  //the column index 
-		m = (count % (Sigma * w)) % Sigma;  //the row index
+		i = count / (sigma * w);
+		j = (count % (sigma * w)) / sigma;  //the column index 
+		m = (count % (sigma * w)) % sigma;  //the row index
 
 		tile_val[i][m][j] = val_output[count];
 		tile_col_idx[i][m][j] = col_idx[count];
 	}
 
-
 	for (i = 0; i < p - 1; i++)
 	{
-		for (j = 0; j < Sigma; j++)
+		for (j = 0; j < sigma; j++)
 		{
 			for (m = 0; m < w; m++)
 			{
@@ -455,27 +448,26 @@ void tile_val_computing()
 			}
 		}
 	}
-
 }
 
-void tile_ptr_computing()
+void Compute_Tile_Ptr()
 {
 	//int p;
 	int bnd;
 	int tid, i;
 
-	if ((none_zero_num % (w * Sigma)) > 0)
-		p = (none_zero_num / (w * Sigma)) + 1;
+	if ((none_zero_num % (w * sigma)) > 0)
+		p = (none_zero_num / (w * sigma)) + 1;
 	else
-		p = none_zero_num / (w * Sigma);
+		p = none_zero_num / (w * sigma);
 
 	if ((tile_ptr = (int *)malloc((p + 1) * sizeof(*tile_ptr))) == NULL)
-		Debug("Tile_ptr_computing : malloc(tile_ptr) failed", 1);
+		Debug("Compute_tile_ptr : malloc(tile_ptr) failed", 1);
 
 	tile_ptr[p] = row_num;
 	for (tid = 0; tid <= p; tid++)
 	{
-		bnd = tid * w * Sigma;
+		bnd = tid * w * sigma;
 		for (i = 0; i <= row_num; i++)
 		{
 			if (bnd < row_ptr[i + 1] && bnd >= row_ptr[i])
@@ -498,7 +490,6 @@ void tile_ptr_computing()
 	{
 		//  printf("tile_ptr %i is %i\n", tid,  tile_ptr[tid]);
 	}
-
 }
 
 void Debug(char *mesg, int terminate)

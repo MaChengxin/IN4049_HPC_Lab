@@ -19,12 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <None Include="csr_matrix.dat" />
-    <None Include="full-matrix-input.dat" />
-    <None Include="full-matrix-input2.dat" />
-    <None Include="rdb450.dat" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="csr5-jin.c" />
   </ItemGroup>
   <ItemGroup>
