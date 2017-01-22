@@ -11,7 +11,7 @@ CSR-Formation by Jianbing Jin, 2016-Jan-6
 
 void Read_Matrix();
 void CSR_Transformation();
-void Write_Matrix();
+void Write_Matrix_Info();
 void Clean_Up();
 void Debug(char *mesg, int terminate);
 

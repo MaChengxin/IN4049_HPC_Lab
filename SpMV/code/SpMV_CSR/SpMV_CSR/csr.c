@@ -8,7 +8,7 @@ int main(int argc, char **argv)
 {
 	Read_Matrix();
 	CSR_Transformation();
-	Write_Matrix();
+	Write_Matrix_Info();
 	Clean_Up();
 	return 0;
 }
@@ -156,16 +156,16 @@ void CSR_Transformation()
 }
 
 /*
-Write_Matrix() generates the file for the CUDA application.
+Write_Matrix_Info() generates the file for the CUDA application.
 */
-void Write_Matrix()
+void Write_Matrix_Info()
 {
 	Debug("Writing transformed matrix info...", 0);
 
 	FILE *f;
 
 	if ((f = fopen("csr_matrix.dat", "w")) == NULL)
-		Debug("Write_Matrix: fopen failed", 1);
+		Debug("Write_Matrix_Info: fopen failed", 1);
 
 	fprintf(f, "(row*column, none_zero_num): (%i*%i, %i)\n", row_size, col_size, none_zero_num);
 
