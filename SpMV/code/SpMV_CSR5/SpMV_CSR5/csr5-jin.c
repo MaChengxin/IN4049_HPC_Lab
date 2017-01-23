@@ -246,25 +246,25 @@ void Compute_Tile_Desc()
 			Debug("CSR5_Transformation_tile_bit_flag: malloc (tile_bit_flag) failed", 1);
 		for (j = 0; j < sigma; j++)
 		{
-			if ((tile_bit_flag[i][j] = malloc((w) * sizeof(***tile_bit_flag))) == NULL) // every row in the  tile has w column
+			if ((tile_bit_flag[i][j] = malloc((omega) * sizeof(***tile_bit_flag))) == NULL) // every row in the  tile has w column
 				Debug("CSR5_Transformation_tile_bit_flag: malloc (tile_bit_flag) failed", 1);
 		}
 	}
 
-	for (count = 0; (count < (p - 1) * sigma * w); count++)
+	for (count = 0; (count < (p - 1) * sigma * omega); count++)
 	{
 		// computer the corresponding index i j m for each count;
-		i = count / (sigma * w);  // tile index
-		j = (count % (sigma * w)) / sigma; //
-		m = (count % (sigma * w)) % sigma; //
+		i = count / (sigma * omega);  // tile index
+		j = (count % (sigma * omega)) / sigma; //
+		m = (count % (sigma * omega)) % sigma; //
 		tile_bit_flag[i][m][j] = False;  //as the tile 
 	}
 
 	for (count = 0; count < row_num; count++)
 	{
-		i = row_ptr[count] / (sigma * w);
-		j = (row_ptr[count] % (sigma * w)) / sigma;
-		m = (row_ptr[count] % (sigma * w)) % sigma;
+		i = row_ptr[count] / (sigma * omega);
+		j = (row_ptr[count] % (sigma * omega)) / sigma;
+		m = (row_ptr[count] % (sigma * omega)) % sigma;
 
 		tile_bit_flag[i][m][j] = True;
 	}
@@ -278,7 +278,7 @@ void Compute_Tile_Desc()
 	{
 		for (j = 0; j < sigma; j++)
 		{
-			for (m = 0; m < w; m++)
+			for (m = 0; m < omega; m++)
 			{
 				printf("tile_bit_flag[%i][%i][%i] is %i\n", i, m, j, tile_bit_flag[i][m][j]);
 			}
@@ -291,16 +291,16 @@ void Compute_Tile_Desc()
 		Debug("CSR5_Transformation_tile_seg_offset : malloc (tile_seg_offset) failed", 1);
 	for (i = 0; i < p - 1; i++)
 	{
-		if ((tile_y_offset[i] = malloc((w) * sizeof(**tile_y_offset))) == NULL)
+		if ((tile_y_offset[i] = malloc((omega) * sizeof(**tile_y_offset))) == NULL)
 			Debug("CSR5_Transformation_tile_y_offset: malloc (tile_y_offset) failed", 1);
-		if ((tile_seg_offset[i] = malloc((w) * sizeof(*tile_seg_offset))) == NULL)
+		if ((tile_seg_offset[i] = malloc((omega) * sizeof(*tile_seg_offset))) == NULL)
 			Debug("CSR5_Transformation_tile_seg_offset : malloc (tile_seg_offset) failed", 1);
 	}
 	//compute the y_offset//
 	for (i = 0; i < (p - 1); i++)
 	{
 		int bais = 0;
-		for (m = 0; m < w; m++)
+		for (m = 0; m < omega; m++)
 		{
 			tile_y_offset[i][m] = bais;
 			for (j = 0; j < sigma; j++)
@@ -311,7 +311,7 @@ void Compute_Tile_Desc()
 		}
 
 		//compute the seg_offset//
-		for (m = 0; m < w; m++)
+		for (m = 0; m < omega; m++)
 		{
 			int seg = 0;
 			for (j = 0; j < sigma; j++)
@@ -321,12 +321,12 @@ void Compute_Tile_Desc()
 			tile_seg_offset[i][m] = 1 - seg;
 		}
 
-		for (m = 0; m < w - 1; m++)
+		for (m = 0; m < omega - 1; m++)
 		{
 			tile_seg_offset[i][m] = tile_seg_offset[i][m + 1];
 		}
 		tile_seg_offset[i][m] = 0;
-		for (m = 0; m < w; m++)
+		for (m = 0; m < omega; m++)
 		{
 			printf("tile_seg_offset[%i][%i] is %i\n", i, m, tile_seg_offset[i][m]);
 		}
@@ -343,7 +343,7 @@ void Compute_Tile_Desc()
 	{
 		empty_tile_true_counter[i] = 0;
 		if (tile_ptr[i] <= 0)
-			for (m = 0; m < w; m++)
+			for (m = 0; m < omega; m++)
 			{
 				for (j = 0; j < sigma; j++)
 				{
@@ -366,13 +366,13 @@ void Compute_Tile_Desc()
 		int row_ptr_counter = 0;
 		int tid;
 		if (tile_ptr[i] <= 0)
-			for (m = 0; m < w; m++)
+			for (m = 0; m < omega; m++)
 			{
 				for (j = 0; j < sigma; j++)
 				{
 					if (tile_bit_flag[i][j][m] == True)
 					{
-						tid = i * sigma * w + m * w + j;
+						tid = i * sigma * omega + m * omega + j;
 						for (row_ptr_counter = 0; row_ptr_counter < row_num; row_ptr_counter++)
 						{
 							if ((tid >= row_ptr[row_ptr_counter]) && (tid <= row_ptr[row_ptr_counter + 1]))
@@ -419,19 +419,19 @@ void Compute_Tile_Val()
 
 		for (j = 0; j < sigma; j++)
 		{
-			if ((tile_val[i][j] = malloc((w) * sizeof(***tile_val))) == NULL)
+			if ((tile_val[i][j] = malloc((omega) * sizeof(***tile_val))) == NULL)
 				Debug("CSR5_Transformation_tile_val : malloc (tile_val[i][j]) failed", 1);
-			if ((tile_col_idx[i][j] = malloc((w) * sizeof(***tile_col_idx))) == NULL)
+			if ((tile_col_idx[i][j] = malloc((omega) * sizeof(***tile_col_idx))) == NULL)
 				Debug("CSR5_Transformation_tile_col_idx : malloc (tile_col_idx[i][j]) failed", 1);
 		}
 	}
 
-	for (count = 0; (count < (p - 1) * sigma * w); count++)
+	for (count = 0; (count < (p - 1) * sigma * omega); count++)
 	{
 		// computer the corresponding index i j m for each count;
-		i = count / (sigma * w);
-		j = (count % (sigma * w)) / sigma;  //the column index 
-		m = (count % (sigma * w)) % sigma;  //the row index
+		i = count / (sigma * omega);
+		j = (count % (sigma * omega)) / sigma;  //the column index 
+		m = (count % (sigma * omega)) % sigma;  //the row index
 
 		tile_val[i][m][j] = val_output[count];
 		tile_col_idx[i][m][j] = col_idx[count];
@@ -441,7 +441,7 @@ void Compute_Tile_Val()
 	{
 		for (j = 0; j < sigma; j++)
 		{
-			for (m = 0; m < w; m++)
+			for (m = 0; m < omega; m++)
 			{
 				//     printf("tile_val[%i][%i][%i] is %f\n", i, m, j,  tile_val[i][m][j]);
 				//    printf("tile_col_idx[%i][%i][%i] is %i\n", i, m, j,  tile_col_idx[i][m][j]);
@@ -456,10 +456,10 @@ void Compute_Tile_Ptr()
 	int bnd;
 	int tid, i;
 
-	if ((none_zero_num % (w * sigma)) > 0)
-		p = (none_zero_num / (w * sigma)) + 1;
+	if ((none_zero_num % (omega * sigma)) > 0)
+		p = (none_zero_num / (omega * sigma)) + 1;
 	else
-		p = none_zero_num / (w * sigma);
+		p = none_zero_num / (omega * sigma);
 
 	if ((tile_ptr = (int *)malloc((p + 1) * sizeof(*tile_ptr))) == NULL)
 		Debug("Compute_tile_ptr : malloc(tile_ptr) failed", 1);
@@ -467,7 +467,7 @@ void Compute_Tile_Ptr()
 	tile_ptr[p] = row_num;
 	for (tid = 0; tid <= p; tid++)
 	{
-		bnd = tid * w * sigma;
+		bnd = tid * omega * sigma;
 		for (i = 0; i <= row_num; i++)
 		{
 			if (bnd < row_ptr[i + 1] && bnd >= row_ptr[i])

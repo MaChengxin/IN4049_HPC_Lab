@@ -14,7 +14,7 @@ By Jianbing Jin   2016-Jan-6
 #define max(a,b) ((a)>(b)?a:b)
 
 // for computing the w and sigma
-#define w 4   //w is decided by the hardware
+#define omega 4   //omega is decided by the hardware
 int sigma = 4; // sigma is set as 4 initially
 int p; //the tile number
 
