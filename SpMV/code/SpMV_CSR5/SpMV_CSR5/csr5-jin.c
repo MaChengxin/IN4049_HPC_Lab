@@ -94,7 +94,6 @@ void CSR_Transformation()
 		each_row_counter[j] = each_row_counter[j] + 1;
 	}
 
-
 	if ((row_Matrix = malloc((row_num + 1) * sizeof(*row_Matrix))) == NULL)
 		Debug("CSR_Transformation : malloc (row_1) failed", 1);
 	if ((col_Matrix = malloc((row_num + 1) * sizeof(*col_Matrix))) == NULL)
@@ -158,7 +157,7 @@ void CSR_Transformation()
 		for (j = 1; j < each_row_counter[i] + 1; j++)
 		{
 			val_output[CSR_counter] = val_Matrix[i][j];
-			col_idx[CSR_counter] = col_Matrix[i][j] - 1;  // the fortran is different from c language for the strage of matrix /////////////////////////////////    
+			col_idx[CSR_counter] = col_Matrix[i][j] - 1;  // the fortran is different from c language for the strage of matrix
 			CSR_counter++;
 		}
 	}
@@ -175,16 +174,14 @@ void Compute_Sigma()
 	division_result = (int)(none_zero_num / row_num);
 	if (division_result < r)
 		sigma = r;
+	else if (division_result <= s)
+		sigma = division_result;
+	else if (division_result <= t)
+		sigma = s;
 	else
-		if (division_result <= s)
-			sigma = division_result;
-		else
-			if (division_result <= t)
-				sigma = s;
-			else
-				sigma = u;
+		sigma = u;
 
-	printf("sigma is %i\n", division_result);
+	printf("sigma is %i\n", sigma);
 }
 
 void CSR5_Transformation()
@@ -231,6 +228,118 @@ void Clean_Up()
 	free(val_output);
 	free(col_idx);
 	free(row_ptr);
+}
+
+void Compute_Tile_Ptr()
+{
+	int tid, bnd;
+
+	if ((none_zero_num % (omega * sigma)) > 0)
+		p = (none_zero_num / (omega * sigma)) + 1;
+	else
+		p = none_zero_num / (omega * sigma);
+
+	if ((tile_ptr = (int *)malloc((p + 1) * sizeof(int))) == NULL)
+		Debug("Compute_Tile_Ptr : malloc(tile_ptr) failed", 1);
+	memset(tile_ptr, 0, (p + 1) * sizeof(int));
+	// for (int i = 0; i < p + 1; i++) printf("tile_ptr[%d] is %d\n", i, tile_ptr[i]);
+
+	for (tid = 0; tid < p; tid++)
+	{
+		bnd = tid * omega * sigma;
+		for (int i = 0; i < row_num; i++)
+		{
+			if (bnd < row_ptr[i + 1] && bnd >= row_ptr[i])
+				tile_ptr[tid] = i;
+		}
+	}
+
+	// TODO: make sure why the last element in tile_ptr is the row size
+	tile_ptr[p] = row_num;
+
+	for (tid = 0; tid < p + 1; tid++)
+		printf("tile_ptr[%i] is %i\n", tid, tile_ptr[tid]);
+
+	for (tid = 0; tid < p; tid++)  //check whether there is a empty row in the tile[i]
+	{
+		for (int rid = tile_ptr[tid]; rid < tile_ptr[tid + 1] + 1; rid++)
+		{
+			if (row_ptr[rid] == row_ptr[rid + 1])
+			{
+				tile_ptr[tid] = -tile_ptr[tid];
+				break;
+			}
+		}
+	}
+}
+
+void Compute_Tile_Val()
+{
+	int num_mat_squre = none_zero_num / (omega * sigma);
+
+	if ((tile_val_in_mat = malloc(num_mat_squre * sizeof(*tile_val_in_mat))) == NULL)
+		Debug("CSR5_Transformation_tile_val_in_mat : malloc (tile_val_in_mat) failed", 1);
+	if ((tile_col_idx_in_mat = malloc(num_mat_squre * sizeof(*tile_col_idx_in_mat))) == NULL)
+		Debug("CSR5_Transformation_tile_col_idx_in_mat : malloc (tile_col_idx_in_mat) failed", 1);
+
+	for (int i = 0; i < num_mat_squre; i++)
+	{
+		if ((tile_val_in_mat[i] = malloc((sigma) * sizeof(**tile_val_in_mat))) == NULL)
+			Debug("CSR5_Transformation_tile_val_in_mat: malloc (tile_val_in_mat[i]) failed", 1);
+		if ((tile_col_idx_in_mat[i] = malloc((sigma) * sizeof(**tile_col_idx_in_mat))) == NULL)
+			Debug("CSR5_Transformation_tile_col_idx_in_mat: malloc (tile_col_idx_in_mat[i]) failed", 1);
+
+		for (int j = 0; j < sigma; j++)
+		{
+			if ((tile_val_in_mat[i][j] = malloc((omega) * sizeof(***tile_val_in_mat))) == NULL)
+				Debug("CSR5_Transformation_tile_val_in_mat : malloc (tile_val_in_mat[i][j]) failed", 1);
+			if ((tile_col_idx_in_mat[i][j] = malloc((omega) * sizeof(***tile_col_idx_in_mat))) == NULL)
+				Debug("CSR5_Transformation_tile_col_idx_in_mat : malloc (tile_col_idx_in_mat[i][j]) failed", 1);
+		}
+	}
+
+	for (int count = 0; count < num_mat_squre * sigma * omega; count++)
+	{
+		int i = count / (sigma * omega);  // the tile index
+		int j = (count % (sigma * omega)) % sigma;  //the row index
+		int k = (count % (sigma * omega)) / sigma;  //the column index
+
+		tile_val_in_mat[i][j][k] = val_output[count];
+		tile_col_idx_in_mat[i][j][k] = col_idx[count];
+	}
+
+	for (int i = 0; i < num_mat_squre; i++)
+	{
+		for (int j = 0; j < sigma; j++)
+		{
+			for (int k = 0; k < omega; k++)
+			{
+				// printf("tile_val_in_mat[%i][%i][%i] is %f\n", i, j, k, tile_val_in_mat[i][j][k]);
+				printf("tile_col_idx_in_mat[%i][%i][%i] is %i\n", i, j, k,  tile_col_idx_in_mat[i][j][k]);
+			}
+		}
+	}
+
+	int num_rest_element = none_zero_num % (sigma*omega);
+
+	if (num_rest_element != 0)
+	{
+		int *tile_val_in_array = (float*)malloc(num_rest_element * sizeof(float));
+		if (tile_val_in_array == NULL)
+			Debug("malloc tile_val_in_array failed.\n", 1);
+
+		int *tile_col_idx_in_array = (int*)malloc(num_rest_element * sizeof(int));
+		if (tile_col_idx_in_array == NULL)
+			Debug("malloc tile_col_idx_in_array failed.\n", 1);
+
+		for (int count = 0; count < num_rest_element; count++)
+		{
+			tile_val_in_array[count] = val_output[num_mat_squre * sigma * omega + count];
+			tile_col_idx_in_array[count] = col_idx[num_mat_squre * sigma * omega + count];
+			// printf("tile_val_in_array[%d] is %f\n", count, tile_val_in_array[count]);
+			printf("tile_col_idx_in_array[%d] is %d\n", count, tile_col_idx_in_array[count]);
+		}
+	}
 }
 
 void Compute_Tile_Desc()
@@ -397,98 +506,6 @@ void Compute_Tile_Desc()
 				printf("tile_empty_offset[%i][%i] is %i\n", i, j, tile_empty_offset[i][j]);
 			}
 		}
-	}
-}
-
-void Compute_Tile_Val()
-{
-	int i, j, m;
-	int count;
-
-	if ((tile_val = malloc((p - 1) * sizeof(*tile_val))) == NULL)
-		Debug("CSR5_Transformation_tile_val : malloc (tile_val) failed", 1);
-	if ((tile_col_idx = malloc((p - 1) * sizeof(*tile_col_idx))) == NULL)
-		Debug("CSR5_Transformation_tile_col_idx : malloc (tile_col_idx) failed", 1);
-
-	for (i = 0; i < p - 1; i++)
-	{
-		if ((tile_val[i] = malloc((sigma) * sizeof(**tile_val))) == NULL)
-			Debug("CSR5_Transformation_tile_val: malloc (tile_val[i]) failed", 1);
-		if ((tile_col_idx[i] = malloc((sigma) * sizeof(**tile_col_idx))) == NULL)
-			Debug("CSR5_Transformation_tile_col_idx: malloc (tile_col_idx[i]) failed", 1);
-
-		for (j = 0; j < sigma; j++)
-		{
-			if ((tile_val[i][j] = malloc((omega) * sizeof(***tile_val))) == NULL)
-				Debug("CSR5_Transformation_tile_val : malloc (tile_val[i][j]) failed", 1);
-			if ((tile_col_idx[i][j] = malloc((omega) * sizeof(***tile_col_idx))) == NULL)
-				Debug("CSR5_Transformation_tile_col_idx : malloc (tile_col_idx[i][j]) failed", 1);
-		}
-	}
-
-	for (count = 0; (count < (p - 1) * sigma * omega); count++)
-	{
-		// computer the corresponding index i j m for each count;
-		i = count / (sigma * omega);
-		j = (count % (sigma * omega)) / sigma;  //the column index 
-		m = (count % (sigma * omega)) % sigma;  //the row index
-
-		tile_val[i][m][j] = val_output[count];
-		tile_col_idx[i][m][j] = col_idx[count];
-	}
-
-	for (i = 0; i < p - 1; i++)
-	{
-		for (j = 0; j < sigma; j++)
-		{
-			for (m = 0; m < omega; m++)
-			{
-				//     printf("tile_val[%i][%i][%i] is %f\n", i, m, j,  tile_val[i][m][j]);
-				//    printf("tile_col_idx[%i][%i][%i] is %i\n", i, m, j,  tile_col_idx[i][m][j]);
-			}
-		}
-	}
-}
-
-void Compute_Tile_Ptr()
-{
-	//int p;
-	int bnd;
-	int tid, i;
-
-	if ((none_zero_num % (omega * sigma)) > 0)
-		p = (none_zero_num / (omega * sigma)) + 1;
-	else
-		p = none_zero_num / (omega * sigma);
-
-	if ((tile_ptr = (int *)malloc((p + 1) * sizeof(*tile_ptr))) == NULL)
-		Debug("Compute_tile_ptr : malloc(tile_ptr) failed", 1);
-
-	tile_ptr[p] = row_num;
-	for (tid = 0; tid <= p; tid++)
-	{
-		bnd = tid * omega * sigma;
-		for (i = 0; i <= row_num; i++)
-		{
-			if (bnd < row_ptr[i + 1] && bnd >= row_ptr[i])
-				tile_ptr[tid] = i;
-		}
-		// printf("tile_ptr %i is %i\n", tid,  tile_ptr[tid]);
-	}
-	for (tid = 0; tid < p; tid++)  //check whether there is a empty row in the tile[i]
-	{
-		for (i = tile_ptr[tid]; i <= tile_ptr[tid + 1]; i++)
-		{
-			if (row_ptr[i] == row_ptr[i + 1])
-			{
-				tile_ptr[tid] = -tile_ptr[tid];
-				break;
-			}
-		}
-	}
-	for (tid = 0; tid <= p; tid++)
-	{
-		//  printf("tile_ptr %i is %i\n", tid,  tile_ptr[tid]);
 	}
 }
 

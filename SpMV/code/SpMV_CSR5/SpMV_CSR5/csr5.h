@@ -5,7 +5,6 @@ By Jianbing Jin   2016-Jan-6
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 #define DEBUG 0
 #define True 1
@@ -13,15 +12,15 @@ By Jianbing Jin   2016-Jan-6
 
 #define max(a,b) ((a)>(b)?a:b)
 
-// for computing the w and sigma
-#define omega 4   //omega is decided by the hardware
-int sigma = 4; // sigma is set as 4 initially
-int p; //the tile number
+#define omega 4   // omega is decided by the hardware
+int sigma = 4;
+// TODO: change the name of p
+int p; // the number of tiles
 
 // csr5-parameters
 int *tile_ptr;
-float ***tile_val;
-int ***tile_col_idx;
+float ***tile_val_in_mat;
+int ***tile_col_idx_in_mat;
 
 // tile description
 int ***tile_bit_flag;
