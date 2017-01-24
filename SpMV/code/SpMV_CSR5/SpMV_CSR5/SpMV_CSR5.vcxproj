@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="csr5-jin.c" />
+    <ClCompile Include="csr5.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="csr5.h" />
