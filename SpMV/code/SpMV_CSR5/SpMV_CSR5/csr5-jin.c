@@ -425,52 +425,46 @@ void Compute_Tile_Desc()
 	if ((tile_empty_offset = malloc(num_mat_square * sizeof(*tile_empty_offset))) == NULL)
 		Debug("CSR5_Transformation_tile_empty_offset : malloc (tile_empty_offset) failed", 1);
 
-	// int empty_tile_true_counter[num_mat_square];
-	int* empty_tile_true_counter = (int*)malloc(num_mat_square * sizeof(int));  //calculate the number of "True" in each tile with empty row!!!
-
+	//count the number of "True" in each tile with empty row
+	int* empty_tile_true_counter = (int*)malloc(num_mat_square * sizeof(int));
 	for (int i = 0; i < num_mat_square; i++)
 	{
 		empty_tile_true_counter[i] = 0;
 		if (tile_ptr[i] <= 0)
-			for (int m = 0; m < omega; m++)
+			for (int j = 0; j < omega; j++)
 			{
-				for (int j = 0; j < sigma; j++)
+				for (int k = 0; k < sigma; k++)
 				{
-					if (tile_bit_flag[i][j][m] == True)
+					if (tile_bit_flag[i][k][j] == True)
 						empty_tile_true_counter[i]++;
 				}
 			}
 		printf("empty_tile_true_couter[%i] is %i\n", i, empty_tile_true_counter[i]);
 	}
 
-	for (int i = 0; i < num_mat_square; i++)
-	{                            //empty_tile_true_counter[i]
-		if ((tile_empty_offset[i] = malloc(empty_tile_true_counter[i] * sizeof(**tile_empty_offset))) == NULL)
-			Debug("CSR5_Transformation_tile_empty_offset: malloc (tile_empty_offset) failed", 1);
-		empty_tile_true_counter[i] = 0; // it will be used in the next program
-	}
-
-	for (int i = 0; i < num_mat_square; i++)
+	for (int tid = 0; tid < num_mat_square; tid++)
 	{
+		if ((tile_empty_offset[tid] = malloc(empty_tile_true_counter[tid] * sizeof(**tile_empty_offset))) == NULL)
+			Debug("CSR5_Transformation_tile_empty_offset: malloc (tile_empty_offset) failed", 1);
+		empty_tile_true_counter[tid] = 0;
 		int row_ptr_counter = 0;
-		int tid;
-		if (tile_ptr[i] <= 0)
-			for (int m = 0; m < omega; m++)
+		if (tile_ptr[tid] <= 0)
+			for (int j = 0; j < omega; j++)
 			{
-				for (int j = 0; j < sigma; j++)
+				for (int k = 0; k < sigma; k++)
 				{
-					if (tile_bit_flag[i][j][m] == True)
+					if (tile_bit_flag[tid][k][j] == True)
 					{
-						tid = i * sigma * omega + m * omega + j;
+						int ptr = tid * sigma * omega + j * omega + k;
 						for (row_ptr_counter = 0; row_ptr_counter < row_num; row_ptr_counter++)
 						{
-							if ((tid >= row_ptr[row_ptr_counter]) && (tid <= row_ptr[row_ptr_counter + 1]))
+							if ((ptr >= row_ptr[row_ptr_counter]) && (ptr <= row_ptr[row_ptr_counter + 1]))
 							{
-								tile_empty_offset[i][empty_tile_true_counter[i]] = row_ptr_counter + tile_ptr[i]; // equal to tile_empty[][] = row_ptr_counter - remove_sign(tile_ptr[i])
-																												  // printf("tile_empty_offset[%i][%i] is %i\n", i, empty_tile_true_counter[i], tile_empty_offset[i][empty_tile_true_counter[i]]);
+								tile_empty_offset[tid][empty_tile_true_counter[tid]] = row_ptr_counter + tile_ptr[tid]; // equal to tile_empty[][] = row_ptr_counter - remove_sign(tile_ptr[tid])
+								// printf("tile_empty_offset[%i][%i] is %i\n", tid, empty_tile_true_counter[tid], tile_empty_offset[tid][empty_tile_true_counter[tid]]);
 							}
 						}
-						empty_tile_true_counter[i]++;
+						empty_tile_true_counter[tid]++;
 					}
 				}
 			}
