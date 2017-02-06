@@ -12,6 +12,9 @@ send-hello-world:
 send-poisson-par:
 	sshpass -p $(PASSWD) scp -r poisson/code/par $(REMOTE_HOST):/home/$(USERNAME)/poisson
 
+send-fempois:
+	sshpass -p $(PASSWD) scp -r FEMPois/code $(REMOTE_HOST):/home/$(USERNAME)/FEMPois
+
 fetch-poisson-profile:
 	sshpass -p $(PASSWD) scp $(REMOTE_HOST):/home/$(USERNAME)/poisson/profile*.csv poisson/recv-from-server
 
@@ -20,4 +23,8 @@ fetch-poisson-error:
 
 fetch-poisson-border-info:
 	sshpass -p $(PASSWD) scp $(REMOTE_HOST):/home/$(USERNAME)/poisson/border*.dat poisson/recv-from-server
-.PHONY: conn send-hello-world send-poisson-par fetch-poisson-profile fetch-poisson-error fetch-poisson-border-info
+
+fetch-fempois-timer:
+	sshpass -p $(PASSWD) scp $(REMOTE_HOST):/home/$(USERNAME)/FEMPois/timer.dat FEMPois/recv-from-server
+
+.PHONY: conn send-hello-world send-poisson-par send-fempois fetch-poisson-profile fetch-poisson-error fetch-poisson-border-info fetch-fempois-timer
